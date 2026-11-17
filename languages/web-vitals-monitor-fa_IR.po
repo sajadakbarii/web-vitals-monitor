@@ -1,0 +1,889 @@
+# Persian translation for the Optimization Suggestions and page checklist sections.
+msgid ""
+msgstr ""
+"Project-Id-Version: Real User Web Vitals Monitor 1.2.0\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Domain: web-vitals-monitor\n"
+
+msgid "No field data for this period yet"
+msgstr "هنوز داده‌ی واقعی برای این بازه ثبت نشده است"
+
+msgid "Suggestions are generated from real-user measurements. Once visitors browse the site, recommendations appear here automatically."
+msgstr "پیشنهادها از اندازه‌گیری کاربران واقعی ساخته می‌شوند. به محض اینکه بازدیدکنندگان در سایت بگردند، پیشنهادها به‌صورت خودکار اینجا نمایش داده می‌شوند."
+
+msgid "Open the site in a private window (administrators are excluded by default) and click around a few pages."
+msgstr "سایت را در یک پنجره‌ی خصوصی (Private) باز کنید (بازدید مدیران به‌طور پیش‌فرض ثبت نمی‌شود) و چند صفحه را مرور کنید."
+
+msgid "Make sure your security plugin, firewall or CDN does not block POST requests to /wp-json/web-vitals/v1/collect."
+msgstr "مطمئن شوید افزونه‌ی امنیتی، فایروال یا CDN درخواست‌های POST به ‎/wp-json/web-vitals/v1/collect‎ را مسدود نمی‌کند."
+
+msgid "Check that the sampling rate in Settings is above 0%."
+msgstr "بررسی کنید که نرخ نمونه‌برداری در تنظیمات بیشتر از 0% باشد."
+
+msgid "No measurements received in the last 24 hours"
+msgstr "در 24 ساعت گذشته هیچ داده‌ای دریافت نشده است"
+
+msgid "Data was collected before but has stopped arriving. This usually means a cache, optimization or security change is blocking the collector."
+msgstr "قبلاً داده جمع‌آوری می‌شد اما دریافت آن متوقف شده است. معمولاً یعنی تغییری در کش، افزونه‌ی بهینه‌سازی یا تنظیمات امنیتی جلوی اسکریپت جمع‌آوری را گرفته است."
+
+msgid "Purge the page cache so pages include the current collector loader."
+msgstr "کش صفحات را پاک کنید تا صفحات نسخه‌ی فعلی لودر جمع‌آوری را داشته باشند."
+
+msgid "If a JavaScript optimization plugin combines or delays scripts, exclude \"wvm-loader\", web-vitals.js and monitor.js."
+msgstr "اگر افزونه‌ی بهینه‌سازی جاوااسکریپت اسکریپت‌ها را ترکیب یا با تأخیر اجرا می‌کند، «wvm-loader»، web-vitals.js و monitor.js را از آن مستثنا کنید."
+
+msgid "Confirm POST requests to /wp-json/web-vitals/v1/collect return 201 in the browser Network panel."
+msgstr "در تب Network مرورگر بررسی کنید که درخواست‌های POST به ‎/wp-json/web-vitals/v1/collect‎ پاسخ 201 برمی‌گردانند."
+
+msgid "Not enough samples for a reliable assessment"
+msgstr "تعداد نمونه‌ها برای ارزیابی قابل‌اعتماد کافی نیست"
+
+msgid "%1$s have fewer than %2$d samples in this period, so their P75 can change a lot from day to day."
+msgstr "%1$s در این بازه کمتر از %2$d نمونه دارند، بنابراین مقدار P75 آن‌ها ممکن است روزبه‌روز تغییر زیادی کند."
+
+msgid "Select a longer date range."
+msgstr "بازه‌ی زمانی طولانی‌تری انتخاب کنید."
+
+msgid "Raise the sampling rate in Settings if it is below 100%."
+msgstr "اگر نرخ نمونه‌برداری کمتر از 100% است، آن را در تنظیمات افزایش دهید."
+
+msgid "INP only exists when visitors interact (click, tap, type), so it naturally has fewer samples than LCP."
+msgstr "INP فقط وقتی ثبت می‌شود که کاربر تعامل کند (کلیک، لمس، تایپ)، پس طبیعی است که نمونه‌های آن از LCP کمتر باشد."
+
+msgid "Enable attribution for detailed suggestions"
+msgstr "برای پیشنهادهای دقیق‌تر، جمع‌آوری Attribution را فعال کنید"
+
+msgid "Without attribution data the advisor cannot tell which element, phase or script causes a slow metric."
+msgstr "بدون داده‌ی Attribution نمی‌توان تشخیص داد کدام المان، مرحله یا اسکریپت باعث کندی یک متریک شده است."
+
+msgid "Turn on \"Collect compact attribution data\" in Settings. It adds a few hundred bytes per page view and no personal data."
+msgstr "گزینه‌ی «Collect compact attribution data» را در تنظیمات روشن کنید. فقط چند صد بایت به هر بازدید اضافه می‌کند و هیچ داده‌ی شخصی ذخیره نمی‌شود."
+
+msgid "TTFB P75: %s (good is 800 ms or less)."
+msgstr "P75 مقدار TTFB: %s (مقدار خوب 800 میلی‌ثانیه یا کمتر است)."
+
+msgid "Server response takes %s of the LCP time on slow page views (guideline: about 40%%)."
+msgstr "در بازدیدهای کند، پاسخ سرور %s از زمان LCP را می‌گیرد (مقدار توصیه‌شده: حدود 40%%)."
+
+msgid "Most of the time is spent before the request starts: redirects or service worker start-up."
+msgstr "بیشتر زمان قبل از شروع درخواست صرف می‌شود: ریدایرکت‌ها یا راه‌اندازی Service Worker."
+
+msgid "Remove redirect chains (http → https → www → trailing slash). Link directly to final URLs, including in menus and ads."
+msgstr "زنجیره‌ی ریدایرکت‌ها را حذف کنید (http ← https ← www ← اسلش انتهایی). در منوها و تبلیغات هم مستقیماً به آدرس نهایی لینک بدهید."
+
+msgid "DNS lookup and connection setup dominate: visitors are far from your server or the connection is slow to establish."
+msgstr "بیشتر زمان صرف جستجوی DNS و برقراری اتصال می‌شود: بازدیدکنندگان از سرور دور هستند یا اتصال دیر برقرار می‌شود."
+
+msgid "Put the site behind a CDN with edge locations near your visitors, and enable HTTP/3 and TLS 1.3."
+msgstr "سایت را پشت یک CDN با سرورهای نزدیک به بازدیدکنندگان قرار دهید و HTTP/3 و TLS 1.3 را فعال کنید."
+
+msgid "Use a fast DNS provider with a long TTL for the site domain."
+msgstr "برای دامنه‌ی سایت از یک سرویس DNS سریع با TTL طولانی استفاده کنید."
+
+msgid "The server itself is slow to produce the HTML (request duration dominates)."
+msgstr "خود سرور در تولید HTML کند است (بیشترین سهم مربوط به زمان پردازش درخواست است)."
+
+msgid "Enable full-page caching (for example LiteSpeed Cache, WP Rocket, W3 Total Cache or server-level caching) so most visitors get pre-built HTML."
+msgstr "کش کامل صفحه را فعال کنید (مثلاً LiteSpeed Cache، WP Rocket، W3 Total Cache یا کش سطح سرور) تا بیشتر بازدیدکنندگان HTML آماده دریافت کنند."
+
+msgid "Add a persistent object cache (Redis or Memcached) to speed up uncached and logged-in requests."
+msgstr "یک Object Cache دائمی (Redis یا Memcached) اضافه کنید تا درخواست‌های بدون کش و کاربران واردشده سریع‌تر شوند."
+
+msgid "Run a supported PHP version (8.2+) with OPcache, and find slow plugins with Query Monitor."
+msgstr "از نسخه‌ی پشتیبانی‌شده‌ی PHP (8.2 به بالا) همراه با OPcache استفاده کنید و افزونه‌های کند را با Query Monitor پیدا کنید."
+
+msgid "Cache HTML at the CDN edge (e.g. Cloudflare APO or cache rules) if your audience is far from the server."
+msgstr "اگر مخاطبان از سرور دور هستند، HTML را در لبه‌ی CDN کش کنید (مثلاً Cloudflare APO یا Cache Rules)."
+
+msgid "Avoid unique tracking parameters in internal links; they bypass the page cache."
+msgstr "در لینک‌های داخلی از پارامترهای ردیابی یکتا استفاده نکنید؛ این پارامترها باعث دور زدن کش صفحه می‌شوند."
+
+msgid "Reduce server response time (TTFB)"
+msgstr "زمان پاسخ سرور (TTFB) را کاهش دهید"
+
+msgid "Every millisecond the server needs before sending the first byte is added directly to FCP and LCP."
+msgstr "هر میلی‌ثانیه‌ای که سرور قبل از ارسال اولین بایت صرف می‌کند، مستقیماً به FCP و LCP اضافه می‌شود."
+
+msgid "Most common LCP elements: %s"
+msgstr "رایج‌ترین المان‌های LCP: %s"
+
+msgid "The LCP image is lazy-loaded"
+msgstr "تصویر LCP به‌صورت Lazy بارگذاری می‌شود"
+
+msgid "loading=\"lazy\" makes the browser wait for layout before downloading the most important image on the page."
+msgstr "ویژگی loading=\"lazy\" باعث می‌شود مرورگر برای دانلود مهم‌ترین تصویر صفحه منتظر چیدمان صفحه بماند."
+
+msgid "%s of slow page views had a lazy-loaded LCP image."
+msgstr "در %s از بازدیدهای کند، تصویر LCP به‌صورت Lazy بارگذاری شده بود."
+
+msgid "Exclude the hero/featured image from lazy loading. Most optimization plugins (WP Rocket, LiteSpeed Cache, Perfmatters, Smush, a3 Lazy Load) have an \"exclude\" or \"skip first N images\" option."
+msgstr "تصویر اصلی/شاخص بالای صفحه را از Lazy Load مستثنا کنید. بیشتر افزونه‌های بهینه‌سازی (WP Rocket، LiteSpeed Cache، Perfmatters، Smush، a3 Lazy Load) گزینه‌ای مثل «Exclude» یا «رد کردن N تصویر اول» دارند."
+
+msgid "For page builders (Elementor, Divi...), disable lazy load on the first section's image widget."
+msgstr "در صفحه‌سازها (المنتور، دیوی و...) Lazy Load را برای ویجت تصویر بخش اول صفحه غیرفعال کنید."
+
+msgid "WordPress core skips lazy loading for the first content image; if a theme outputs the hero image itself, make sure it does not add loading=\"lazy\"."
+msgstr "هسته‌ی وردپرس اولین تصویر محتوا را Lazy نمی‌کند؛ اگر قالب خودش تصویر اصلی را چاپ می‌کند، مطمئن شوید loading=\"lazy\" به آن اضافه نمی‌کند."
+
+msgid "The LCP image is a CSS background"
+msgstr "تصویر LCP یک بک‌گراند CSS است"
+
+msgid "Background images are only discovered after the CSS is downloaded and applied, so they start loading late."
+msgstr "تصاویر پس‌زمینه فقط بعد از دانلود و اعمال CSS شناسایی می‌شوند، بنابراین دیر شروع به بارگذاری می‌کنند."
+
+msgid "%s of slow page views used a background image as LCP."
+msgstr "در %s از بازدیدهای کند، المان LCP یک تصویر پس‌زمینه بود."
+
+msgid "Use a real <img> element for the hero (with width, height and fetchpriority=\"high\") instead of a section background."
+msgstr "به‌جای بک‌گراند سکشن، برای تصویر اصلی از یک المان واقعی <img> (با width، height و fetchpriority=\"high\") استفاده کنید."
+
+msgid "If it must stay a background, preload it: <link rel=\"preload\" as=\"image\" href=\"...\" fetchpriority=\"high\"> in the <head>."
+msgstr "اگر حتماً باید بک‌گراند بماند، آن را Preload کنید: ‎<link rel=\"preload\" as=\"image\" href=\"...\" fetchpriority=\"high\">‎ در بخش <head>."
+
+msgid "Slow page views break down as: TTFB %1$s · load delay %2$s · load duration %3$s · render delay %4$s."
+msgstr "تفکیک زمان در بازدیدهای کند: TTFB %1$s · تأخیر شروع بارگذاری %2$s · مدت بارگذاری %3$s · تأخیر رندر %4$s."
+
+msgid "Make the LCP image discoverable in the initial HTML; avoid hero images injected by JavaScript sliders or page-builder animations."
+msgstr "تصویر LCP را در HTML اولیه قرار دهید تا مرورگر زود آن را پیدا کند؛ از تصاویر اصلی که با اسلایدرهای جاوااسکریپتی یا انیمیشن‌های صفحه‌ساز تزریق می‌شوند پرهیز کنید."
+
+msgid "Add fetchpriority=\"high\" to the LCP image (only one or two images per page). WordPress 6.3+ does this automatically for the first large content image."
+msgstr "به تصویر LCP ویژگی fetchpriority=\"high\" بدهید (فقط یک یا دو تصویر در هر صفحه). وردپرس 6.3 به بعد این کار را برای اولین تصویر بزرگ محتوا خودکار انجام می‌دهد."
+
+msgid "Serve the image from the same origin as the page, or add <link rel=\"preconnect\"> for its CDN host."
+msgstr "تصویر را از همان دامنه‌ی صفحه سرو کنید، یا برای دامنه‌ی CDN آن ‎<link rel=\"preconnect\">‎ اضافه کنید."
+
+msgid "Set fetchpriority=\"low\" on hidden carousel slides so they do not compete with the visible one."
+msgstr "برای اسلایدهای مخفی کاروسل fetchpriority=\"low\" بگذارید تا با اسلاید قابل‌مشاهده رقابت نکنند."
+
+msgid "%s of slow page views loaded the LCP image without fetchpriority=\"high\"."
+msgstr "در %s از بازدیدهای کند، تصویر LCP بدون fetchpriority=\"high\" بارگذاری شده بود."
+
+msgid "Start loading the LCP image earlier"
+msgstr "بارگذاری تصویر LCP را زودتر شروع کنید"
+
+msgid "The browser discovers or prioritizes the LCP resource late. Resource load delay should be close to zero."
+msgstr "مرورگر منبع LCP را دیر پیدا می‌کند یا اولویت پایینی به آن می‌دهد. تأخیر شروع بارگذاری باید نزدیک به صفر باشد."
+
+msgid "%s of LCP images come from another domain, which needs an extra connection."
+msgstr "%s از تصاویر LCP از دامنه‌ی دیگری بارگذاری می‌شوند که به یک اتصال اضافه نیاز دارد."
+
+msgid "Make the LCP image smaller"
+msgstr "حجم تصویر LCP را کم کنید"
+
+msgid "Downloading the LCP image takes a large share of LCP. Fewer bytes means a faster LCP, especially on mobile networks."
+msgstr "دانلود تصویر LCP سهم بزرگی از زمان LCP را می‌گیرد. حجم کمتر یعنی LCP سریع‌تر، به‌خصوص در اینترنت موبایل."
+
+msgid "Largest offenders: %s"
+msgstr "بیشترین سهم: %s"
+
+msgid "Convert hero images to AVIF or WebP (e.g. with an image optimization plugin or your CDN) and compress them."
+msgstr "تصاویر اصلی را به AVIF یا WebP تبدیل و فشرده کنید (مثلاً با افزونه‌ی بهینه‌سازی تصویر یا CDN)."
+
+msgid "Serve correctly sized images with srcset/sizes; do not send a 2000px image to a 400px phone screen."
+msgstr "با srcset/sizes تصویر را در اندازه‌ی مناسب سرو کنید؛ تصویر 2000 پیکسلی را برای صفحه‌ی 400 پیکسلی موبایل نفرستید."
+
+msgid "Use an image CDN close to visitors, with long Cache-Control lifetimes."
+msgstr "از یک CDN تصویر نزدیک به بازدیدکنندگان با زمان Cache-Control طولانی استفاده کنید."
+
+msgid "Reduce how many high-priority files load at the same time as the hero image (fonts, large CSS, other images)."
+msgstr "تعداد فایل‌های پراولویتی که هم‌زمان با تصویر اصلی بارگذاری می‌شوند (فونت‌ها، CSSهای حجیم، تصاویر دیگر) را کم کنید."
+
+msgid "Remove render-blocking resources: defer non-critical JavaScript and avoid synchronous scripts in <head>."
+msgstr "منابع مسدودکننده‌ی رندر را حذف کنید: جاوااسکریپت‌های غیرضروری را defer کنید و از اسکریپت‌های همگام در <head> پرهیز کنید."
+
+msgid "Generate critical CSS and load the rest asynchronously; remove unused CSS (most optimization plugins offer both)."
+msgstr "Critical CSS تولید کنید و بقیه را غیرهمگام بارگذاری کنید؛ CSSهای استفاده‌نشده را حذف کنید (بیشتر افزونه‌های بهینه‌سازی هر دو امکان را دارند)."
+
+msgid "Make sure the LCP element is not hidden by animations, sliders or A/B-testing scripts until JavaScript runs."
+msgstr "مطمئن شوید المان LCP تا اجرای جاوااسکریپت توسط انیمیشن‌ها، اسلایدرها یا اسکریپت‌های تست A/B مخفی نمی‌ماند."
+
+msgid "Break up long JavaScript tasks during load; the browser cannot paint while the main thread is busy."
+msgstr "تسک‌های طولانی جاوااسکریپت را هنگام بارگذاری خرد کنید؛ تا وقتی Main Thread مشغول است مرورگر نمی‌تواند چیزی رسم کند."
+
+msgid "The LCP element is usually text: use font-display: swap (or optional) for web fonts and preload the main font file, or use a system font."
+msgstr "المان LCP معمولاً متن است: برای وب‌فونت‌ها از font-display: swap (یا optional) استفاده کنید و فایل فونت اصلی را Preload کنید، یا از فونت سیستمی استفاده کنید."
+
+msgid "Remove what delays rendering of the LCP element"
+msgstr "عوامل تأخیر در رندر المان LCP را برطرف کنید"
+
+msgid "The LCP resource is ready, but the element is painted much later. Element render delay should be close to zero."
+msgstr "منبع LCP آماده است، اما المان خیلی دیرتر نمایش داده می‌شود. تأخیر رندر المان باید نزدیک به صفر باشد."
+
+msgid "FCP P75: %s (good is 1.8 s or less)."
+msgstr "P75 مقدار FCP: %s (مقدار خوب 1.8 ثانیه یا کمتر است)."
+
+msgid "On slow page views the browser waits %s between the first byte and the first paint."
+msgstr "در بازدیدهای کند، مرورگر بین دریافت اولین بایت و اولین نمایش %s منتظر می‌ماند."
+
+msgid "Reduce render-blocking CSS and JavaScript"
+msgstr "CSS و جاوااسکریپت مسدودکننده‌ی رندر را کاهش دهید"
+
+msgid "The server responds in time, but nothing is painted until stylesheets and synchronous scripts in <head> are downloaded and processed."
+msgstr "سرور به‌موقع پاسخ می‌دهد، اما تا وقتی استایل‌ها و اسکریپت‌های همگام داخل <head> دانلود و پردازش نشوند، چیزی نمایش داده نمی‌شود."
+
+msgid "Inline critical CSS and load the full stylesheet asynchronously."
+msgstr "Critical CSS را درون صفحه (Inline) قرار دهید و فایل CSS کامل را غیرهمگام بارگذاری کنید."
+
+msgid "Add defer to scripts in <head>, or move them to the footer. Unload plugin assets on pages that do not use them (Perfmatters, Asset CleanUp)."
+msgstr "به اسکریپت‌های داخل <head> ویژگی defer بدهید یا آن‌ها را به فوتر منتقل کنید. فایل‌های افزونه‌ها را در صفحاتی که به آن‌ها نیاز ندارند غیرفعال کنید (Perfmatters، Asset CleanUp)."
+
+msgid "Self-host Google Fonts and use font-display: swap."
+msgstr "گوگل‌فونت‌ها را روی هاست خودتان قرار دهید و از font-display: swap استفاده کنید."
+
+msgid "Enable Brotli/Gzip compression and HTTP/2 or HTTP/3 on the server."
+msgstr "فشرده‌سازی Brotli/Gzip و HTTP/2 یا HTTP/3 را روی سرور فعال کنید."
+
+msgid "Slow interactions break down as: input delay %1$s · processing %2$s · presentation delay %3$s."
+msgstr "تفکیک زمان در تعامل‌های کند: تأخیر ورودی %1$s · پردازش %2$s · تأخیر نمایش %3$s."
+
+msgid "Slowest elements to interact with: %s"
+msgstr "کندترین المان‌ها هنگام تعامل: %s"
+
+msgid "Delay non-essential JavaScript until user interaction (the \"Delay JS execution\" feature of WP Rocket, Perfmatters, LiteSpeed Cache, FlyingPress)."
+msgstr "اجرای جاوااسکریپت‌های غیرضروری را تا اولین تعامل کاربر به تأخیر بیندازید (قابلیت «Delay JS execution» در WP Rocket، Perfmatters، LiteSpeed Cache و FlyingPress)."
+
+msgid "Unload plugin scripts on pages that do not need them (sliders, forms, chat widgets, analytics duplicates)."
+msgstr "اسکریپت‌های افزونه‌ها را در صفحاتی که به آن‌ها نیاز ندارند غیرفعال کنید (اسلایدرها، فرم‌ها، ابزارهای چت، کدهای آنالیتیکس تکراری)."
+
+msgid "Break up long tasks so the main thread can respond to input between them."
+msgstr "تسک‌های طولانی را خرد کنید تا Main Thread بتواند بین آن‌ها به ورودی کاربر پاسخ دهد."
+
+msgid "Load third-party tags (chat, heatmaps, ads, tag managers) after the page is idle."
+msgstr "اسکریپت‌های شخص ثالث (چت، هیت‌مپ، تبلیغات، Tag Manager) را بعد از بیکار شدن صفحه بارگذاری کنید."
+
+msgid "%s of slow interactions happened while the page was still loading, when script evaluation blocks the main thread."
+msgstr "%s از تعامل‌های کند زمانی رخ داده که صفحه هنوز در حال بارگذاری بوده و اجرای اسکریپت‌ها Main Thread را اشغال کرده بود."
+
+msgid "Free the main thread so input is handled immediately"
+msgstr "Main Thread را آزاد کنید تا ورودی کاربر فوراً پاسخ داده شود"
+
+msgid "Interactions wait for other JavaScript to finish before their event handlers can even start."
+msgstr "تعامل‌ها باید منتظر تمام شدن جاوااسکریپت‌های دیگر بمانند تا event handlerهایشان شروع به کار کنند."
+
+msgid "Do less work inside click/tap/key handlers: update the visible UI first, then defer the rest (analytics, saving, recalculation) with setTimeout or scheduler.yield()."
+msgstr "کار کمتری داخل handlerهای کلیک/لمس/کیبورد انجام دهید: اول رابط کاربری قابل‌مشاهده را به‌روز کنید و بقیه‌ی کارها (آنالیتیکس، ذخیره، محاسبات) را با setTimeout یا scheduler.yield()‎ به بعد موکول کنید."
+
+msgid "Avoid layout thrashing: do not read layout properties (offsetHeight, getBoundingClientRect) right after changing styles in the same handler."
+msgstr "از Layout Thrashing پرهیز کنید: در همان handler بلافاصله بعد از تغییر استایل، ویژگی‌های چیدمان (offsetHeight، getBoundingClientRect) را نخوانید."
+
+msgid "Debounce handlers on input and scroll; avoid synchronous AJAX and large JSON parsing in handlers."
+msgstr "handlerهای input و scroll را Debounce کنید؛ از AJAX همگام و پردازش JSONهای حجیم داخل handlerها پرهیز کنید."
+
+msgid "Check the scripts listed in the \"scripts behind slow interactions\" suggestion and update or replace the plugin responsible."
+msgstr "اسکریپت‌های فهرست‌شده در پیشنهاد «اسکریپت‌های عامل تعامل‌های کند» را بررسی کنید و افزونه‌ی مسئول را به‌روزرسانی یا جایگزین کنید."
+
+msgid "Speed up event handlers"
+msgstr "event handlerها را سریع‌تر کنید"
+
+msgid "The JavaScript that runs in response to interactions takes too long."
+msgstr "جاوااسکریپتی که در پاسخ به تعامل کاربر اجرا می‌شود بیش از حد طول می‌کشد."
+
+msgid "Style and layout work takes %s on a typical slow interaction."
+msgstr "در یک تعامل کند معمولی، محاسبه‌ی استایل و چیدمان %s طول می‌کشد."
+
+msgid "Reduce DOM size: page builders often nest many wrapper elements. Simplify sections, remove hidden mobile/desktop duplicates, and paginate long lists."
+msgstr "اندازه‌ی DOM را کاهش دهید: صفحه‌سازها معمولاً المان‌های تودرتوی زیادی می‌سازند. سکشن‌ها را ساده کنید، نسخه‌های تکراری مخفی موبایل/دسکتاپ را حذف کنید و لیست‌های طولانی را صفحه‌بندی کنید."
+
+msgid "Apply content-visibility: auto to long below-the-fold sections so the browser skips rendering them."
+msgstr "برای بخش‌های طولانی پایین صفحه content-visibility: auto بگذارید تا مرورگر رندر آن‌ها را به تعویق بیندازد."
+
+msgid "Avoid re-rendering large chunks of HTML with innerHTML in response to interactions (mega menus, filters, mini carts)."
+msgstr "در پاسخ به تعامل‌ها، بخش‌های بزرگ HTML را با innerHTML از نو نسازید (مگامنوها، فیلترها، مینی‌کارت)."
+
+msgid "Animate with transform and opacity instead of properties that trigger layout."
+msgstr "انیمیشن‌ها را با transform و opacity بسازید، نه با ویژگی‌هایی که باعث محاسبه‌ی مجدد چیدمان می‌شوند."
+
+msgid "Reduce rendering work after interactions"
+msgstr "کار رندر پس از تعامل را کاهش دهید"
+
+msgid "Handlers finish quickly, but the browser needs a long time to calculate styles, layout and paint the next frame."
+msgstr "handlerها سریع تمام می‌شوند، اما مرورگر برای محاسبه‌ی استایل، چیدمان و رسم فریم بعدی زمان زیادی لازم دارد."
+
+msgid "%1$s — longest script in %2$s of slow interactions (median %3$s)"
+msgstr "%1$s — طولانی‌ترین اسکریپت در %2$s از تعامل‌های کند (میانه %3$s)"
+
+msgid "Scripts behind slow interactions — top: %s"
+msgstr "اسکریپت‌های عامل تعامل‌های کند — بیشترین سهم: %s"
+
+msgid "Long Animation Frame data shows which scripts were running during slow interactions."
+msgstr "داده‌های Long Animation Frame نشان می‌دهد هنگام تعامل‌های کند کدام اسکریپت‌ها در حال اجرا بوده‌اند."
+
+msgid "Update the plugins and theme listed above; performance fixes are common in new releases."
+msgstr "افزونه‌ها و قالب فهرست‌شده را به‌روزرسانی کنید؛ بهبودهای سرعت در نسخه‌های جدید رایج است."
+
+msgid "Disable features of that plugin you do not use, or load its scripts only on pages that need them."
+msgstr "قابلیت‌هایی از آن افزونه را که استفاده نمی‌کنید غیرفعال کنید، یا اسکریپت‌هایش را فقط در صفحات موردنیاز بارگذاری کنید."
+
+msgid "If a third-party script is listed, load it with a delay or facade (e.g. click-to-load chat or video embeds)."
+msgstr "اگر اسکریپت شخص ثالث در فهرست است، آن را با تأخیر یا به‌صورت Facade بارگذاری کنید (مثلاً چت یا ویدیویی که با کلیک بارگذاری شود)."
+
+msgid "Reproduce with Chrome DevTools > Performance while clicking the elements listed in the INP suggestion."
+msgstr "با Chrome DevTools > Performance و کلیک روی المان‌های ذکرشده در پیشنهاد INP، مشکل را بازتولید کنید."
+
+msgid "Elements that shift the most: %s"
+msgstr "المان‌هایی که بیشترین جابه‌جایی را دارند: %s"
+
+msgid "Give images, videos and iframes explicit dimensions"
+msgstr "برای تصاویر، ویدیوها و iframeها ابعاد مشخص تعیین کنید"
+
+msgid "Media without width and height has no reserved space, so content jumps when it loads."
+msgstr "رسانه‌ی بدون width و height فضای رزرو‌شده ندارد، بنابراین هنگام بارگذاری محتوا جابه‌جا می‌شود."
+
+msgid "In %s of slow page views the biggest shift involved media without width/height attributes."
+msgstr "در %s از بازدیدهای کند، بزرگ‌ترین جابه‌جایی مربوط به رسانه‌ای بدون ویژگی width/height بوده است."
+
+msgid "Add width and height attributes to <img>, <video> and <iframe> (WordPress adds them to content images automatically; check theme templates, logos, sliders and builder widgets)."
+msgstr "به <img>، <video> و <iframe> ویژگی‌های width و height بدهید (وردپرس این کار را برای تصاویر محتوا خودکار انجام می‌دهد؛ قالب، لوگو، اسلایدرها و ویجت‌های صفحه‌ساز را بررسی کنید)."
+
+msgid "For responsive embeds, reserve space with CSS aspect-ratio (e.g. aspect-ratio: 16 / 9)."
+msgstr "برای Embedهای واکنش‌گرا با aspect-ratio در CSS فضا رزرو کنید (مثلاً aspect-ratio: 16 / 9)."
+
+msgid "Make sure lazy-load plugins keep the width/height attributes when they swap in placeholders."
+msgstr "مطمئن شوید افزونه‌های Lazy Load هنگام جایگزینی Placeholder ویژگی‌های width/height را حفظ می‌کنند."
+
+msgid "Fix layout shifts during page load"
+msgstr "جابه‌جایی‌های چیدمان هنگام بارگذاری صفحه را برطرف کنید"
+
+msgid "Most large shifts happen while the page is still loading: late CSS, web fonts swapping in, and media without reserved space."
+msgstr "بیشتر جابه‌جایی‌های بزرگ وقتی صفحه هنوز در حال بارگذاری است رخ می‌دهند: CSS دیررس، جایگزینی وب‌فونت‌ها و رسانه‌های بدون فضای رزرو‌شده."
+
+msgid "%s of the largest shifts happened before the page finished loading."
+msgstr "%s از بزرگ‌ترین جابه‌جایی‌ها پیش از پایان بارگذاری صفحه رخ داده است."
+
+msgid "Use font-display: optional, or match fallback font metrics with size-adjust / ascent-override so text does not reflow when the web font arrives. Preload the main font."
+msgstr "از font-display: optional استفاده کنید، یا ابعاد فونت جایگزین را با size-adjust / ascent-override هم‌اندازه کنید تا با رسیدن وب‌فونت متن جابه‌جا نشود. فونت اصلی را Preload کنید."
+
+msgid "If an optimization plugin loads CSS asynchronously, make sure its critical CSS covers above-the-fold layout (header, menu, hero); otherwise the page reflows when the full CSS applies."
+msgstr "اگر افزونه‌ی بهینه‌سازی CSS را غیرهمگام بارگذاری می‌کند، مطمئن شوید Critical CSS آن چیدمان بالای صفحه (هدر، منو، بخش اصلی) را پوشش می‌دهد؛ وگرنه با اعمال CSS کامل، صفحه جابه‌جا می‌شود."
+
+msgid "Reserve space for the header, logo, and sliders with fixed heights or aspect-ratio."
+msgstr "برای هدر، لوگو و اسلایدرها با ارتفاع ثابت یا aspect-ratio فضا رزرو کنید."
+
+msgid "Reserve space for content injected after load"
+msgstr "برای محتوایی که بعد از بارگذاری اضافه می‌شود فضا رزرو کنید"
+
+msgid "Most large shifts happen after the page has loaded: ads, embeds, cookie or promo banners, lazy-loaded blocks and AJAX content pushing the page down."
+msgstr "بیشتر جابه‌جایی‌های بزرگ بعد از بارگذاری صفحه رخ می‌دهند: تبلیغات، Embedها، بنرهای کوکی یا تبلیغاتی، بلوک‌های Lazy و محتوای AJAX که صفحه را به پایین هل می‌دهند."
+
+msgid "%s of the largest shifts happened after the page finished loading."
+msgstr "%s از بزرگ‌ترین جابه‌جایی‌ها بعد از پایان بارگذاری صفحه رخ داده است."
+
+msgid "Give ad slots and embeds a min-height matching their most common size; keep the space even when no ad fills it."
+msgstr "برای جایگاه تبلیغات و Embedها min-height برابر با رایج‌ترین اندازه‌شان تعیین کنید؛ حتی اگر تبلیغی نمایش داده نشد، فضا را حفظ کنید."
+
+msgid "Show cookie notices, promo bars and popups as overlays (position: fixed) instead of inserting them at the top of the page."
+msgstr "اعلان کوکی، نوار تبلیغاتی و پاپ‌آپ‌ها را به‌صورت شناور (position: fixed) نمایش دهید، نه با درج در بالای صفحه."
+
+msgid "Use skeleton placeholders with fixed height for AJAX-loaded sections (related products, reviews, mini cart)."
+msgstr "برای بخش‌هایی که با AJAX بارگذاری می‌شوند (محصولات مرتبط، نظرات، مینی‌کارت) از Skeleton با ارتفاع ثابت استفاده کنید."
+
+msgid "Animate with transform instead of changing height, top or margin."
+msgstr "انیمیشن را با transform بسازید، نه با تغییر height، top یا margin."
+
+msgid "Reduce unexpected layout shifts"
+msgstr "جابه‌جایی‌های ناگهانی چیدمان را کاهش دهید"
+
+msgid "Shifts happen at different moments of the page lifecycle. Start with the elements listed below."
+msgstr "جابه‌جایی‌ها در لحظات مختلفی از چرخه‌ی عمر صفحه رخ می‌دهند. از المان‌های فهرست‌شده در زیر شروع کنید."
+
+msgid "Reserve space for every element that loads asynchronously (images, ads, embeds, banners)."
+msgstr "برای هر المانی که غیرهمگام بارگذاری می‌شود (تصاویر، تبلیغات، Embedها، بنرها) فضا رزرو کنید."
+
+msgid "Use font-display: optional or metric-matched fallback fonts."
+msgstr "از font-display: optional یا فونت‌های جایگزین هم‌اندازه استفاده کنید."
+
+msgid "Use the Layout Shift Regions option in Chrome DevTools > Rendering to see shifts as they happen."
+msgstr "با گزینه‌ی Layout Shift Regions در Chrome DevTools > Rendering جابه‌جایی‌ها را لحظه‌ای ببینید."
+
+msgid "%1$s: mobile %2$s vs desktop %3$s"
+msgstr "%1$s: موبایل %2$s در برابر دسکتاپ %3$s"
+
+msgid "Mobile visitors have a much worse experience"
+msgstr "تجربه‌ی کاربران موبایل بسیار ضعیف‌تر است"
+
+msgid "Google evaluates mobile and desktop separately. These metrics pass on desktop but fail on mobile:"
+msgstr "گوگل موبایل و دسکتاپ را جداگانه ارزیابی می‌کند. این متریک‌ها در دسکتاپ قبول و در موبایل رد می‌شوند:"
+
+msgid "Use the device filter above to see mobile-only suggestions."
+msgstr "برای دیدن پیشنهادهای مخصوص موبایل، از فیلتر دستگاه در بالای صفحه استفاده کنید."
+
+msgid "Serve smaller images to phones with srcset/sizes, and avoid loading desktop-only sections that are just hidden with CSS."
+msgstr "با srcset/sizes تصاویر کوچک‌تر به موبایل بدهید و بخش‌های مخصوص دسکتاپ را که فقط با CSS مخفی شده‌اند بارگذاری نکنید."
+
+msgid "Phones have slower CPUs: reduce JavaScript, especially sliders, animations and page-builder widgets above the fold."
+msgstr "پردازنده‌ی گوشی‌ها کندتر است: جاوااسکریپت را کم کنید، به‌خصوص اسلایدرها، انیمیشن‌ها و ویجت‌های صفحه‌ساز در بالای صفحه."
+
+msgid "Test with Chrome DevTools CPU throttling (4x) and a \"Slow 4G\" network profile."
+msgstr "با محدودسازی CPU (4x) و پروفایل شبکه‌ی «Slow 4G» در Chrome DevTools تست کنید."
+
+msgid "%1$s — %2$s %3$s"
+msgstr "%1$s — %2$s %3$s"
+
+msgid "Some page templates are rated Poor"
+msgstr "برخی قالب‌های صفحه وضعیت «ضعیف» دارند"
+
+msgid "Pages that share a template usually share the same problem, so fixing the template fixes all of them at once."
+msgstr "صفحاتی که قالب مشترک دارند معمولاً مشکل مشترکی هم دارند، پس اصلاح قالب همه‌ی آن‌ها را یک‌جا درست می‌کند."
+
+msgid "Open the slowest URL of that template from the \"Top Problematic URLs\" table to see its specific suggestions."
+msgstr "کندترین آدرس آن قالب را از جدول «Top Problematic URLs» باز کنید تا پیشنهادهای اختصاصی آن را ببینید."
+
+msgid "Look for template-specific widgets: product galleries, related-post sliders, comment sections, archive filters."
+msgstr "ویجت‌های مخصوص آن قالب را بررسی کنید: گالری محصول، اسلایدر مطالب مرتبط، بخش نظرات، فیلترهای آرشیو."
+
+msgid "Make pages eligible for the back/forward cache"
+msgstr "صفحات را برای Back/Forward Cache مناسب کنید"
+
+msgid "Pages restored from the bfcache appear instantly with no loading and no layout shifts. Many of your back/forward navigations reload the page instead."
+msgstr "صفحاتی که از bfcache بازیابی می‌شوند بدون بارگذاری و بدون جابه‌جایی، فوراً نمایش داده می‌شوند. اما بسیاری از برگشت/جلو رفتن‌ها در سایت شما صفحه را از نو بارگذاری می‌کنند."
+
+msgid "Back/forward navigations: %1$s of page views, only %2$s of them restored from the bfcache."
+msgstr "ناوبری برگشت/جلو: %1$s از بازدیدها، که فقط %2$s از آن‌ها از bfcache بازیابی شده‌اند."
+
+msgid "Do not send Cache-Control: no-store for regular pages (some caching, security and membership plugins add it everywhere)."
+msgstr "برای صفحات معمولی هدر Cache-Control: no-store نفرستید (بعضی افزونه‌های کش، امنیتی و عضویت آن را به همه‌ی صفحات اضافه می‌کنند)."
+
+msgid "Remove \"unload\" event listeners; old jQuery plugins and some analytics scripts still use them. Use \"pagehide\" instead."
+msgstr "Event Listenerهای «unload» را حذف کنید؛ افزونه‌های قدیمی jQuery و برخی اسکریپت‌های آنالیتیکس هنوز از آن استفاده می‌کنند. به‌جای آن از «pagehide» استفاده کنید."
+
+msgid "Check eligibility in Chrome DevTools > Application > Back/forward cache > \"Test back/forward cache\"."
+msgstr "وضعیت را در Chrome DevTools > Application > Back/forward cache > «Test back/forward cache» بررسی کنید."
+
+msgid "Make next-page navigations instant with Speculation Rules"
+msgstr "با Speculation Rules رفتن به صفحه‌ی بعد را آنی کنید"
+
+msgid "No page views were prerendered. Prerendered pages load in the background before the click, so LCP is close to zero."
+msgstr "هیچ بازدیدی به‌صورت Prerender نبوده است. صفحات Prerender شده پیش از کلیک در پس‌زمینه بارگذاری می‌شوند و LCP آن‌ها نزدیک به صفر است."
+
+msgid "WordPress 6.8+ prefetches links with conservative eagerness by default. Install the official \"Speculative Loading\" plugin to switch to prerender with moderate eagerness."
+msgstr "وردپرس 6.8 به بعد به‌طور پیش‌فرض لینک‌ها را با حالت محافظه‌کارانه (conservative) Prefetch می‌کند. افزونه‌ی رسمی «Speculative Loading» را نصب کنید تا به حالت Prerender با شدت moderate تغییر دهید."
+
+msgid "Exclude cart, checkout, logout and other state-changing URLs from speculation."
+msgstr "سبد خرید، تسویه‌حساب، خروج و سایر آدرس‌هایی که وضعیت را تغییر می‌دهند از Speculation مستثنا کنید."
+
+msgid "Inline or unattributed script"
+msgstr "اسکریپت درون‌خطی یا نامشخص"
+
+msgid "Third-party: %s"
+msgstr "شخص ثالث: %s"
+
+msgid "Plugin: %s"
+msgstr "افزونه: %s"
+
+msgid "Theme: %s"
+msgstr "قالب: %s"
+
+msgid "WordPress core"
+msgstr "هسته‌ی وردپرس"
+
+msgid "Site script: %s"
+msgstr "اسکریپت سایت: %s"
+
+msgid "%s s"
+msgstr "%s ثانیه"
+
+msgid "%s ms"
+msgstr "%s میلی‌ثانیه"
+
+msgid "Optimization Suggestions"
+msgstr "پیشنهادهای بهینه‌سازی"
+
+msgid "Prioritized recommendations generated from the attribution data of your slowest page views (at or above the 75th percentile)."
+msgstr "پیشنهادهای اولویت‌بندی‌شده بر اساس داده‌های Attribution کندترین بازدیدهای سایت شما (صدک 75 و بالاتر)."
+
+msgid "Critical"
+msgstr "بحرانی"
+
+msgid "Warning"
+msgstr "هشدار"
+
+msgid "Opportunity"
+msgstr "فرصت بهبود"
+
+msgid "What the data shows"
+msgstr "داده‌ها چه نشان می‌دهند"
+
+msgid "How to fix it"
+msgstr "راه‌حل"
+
+msgid "Most affected URLs"
+msgstr "آدرس‌های بیشتر درگیر"
+
+msgid "Learn more"
+msgstr "اطلاعات بیشتر"
+
+msgid "Nothing to fix right now: all Core Web Vitals are Good for this selection."
+msgstr "فعلاً مشکلی برای رفع وجود ندارد: همه‌ی Core Web Vitals در این بازه «خوب» هستند."
+
+msgid "Unable to load suggestions."
+msgstr "بارگذاری پیشنهادها با خطا مواجه شد."
+
+msgid "Analyzing field data…"
+msgstr "در حال تحلیل داده‌های واقعی کاربران…"
+
+msgid "Analyze this URL"
+msgstr "تحلیل این آدرس"
+
+msgid "Updated %s"
+msgstr "به‌روزرسانی: %s"
+
+msgid "Element: %s"
+msgstr "المان: %s"
+
+msgid "LCP element of this page: %1$s (in %2$s of visits, median LCP %3$s)"
+msgstr "المان LCP این صفحه: %1$s (در %2$s از بازدیدها، میانه‌ی LCP %3$s)"
+
+msgid "Remove lazy loading from the main image \"%s\""
+msgstr "Lazy Load را از تصویر اصلی «%s» بردارید"
+
+msgid "In %s of visits this image had loading=\"lazy\", so the browser started downloading it only after layout."
+msgstr "در %s از بازدیدها این تصویر loading=\"lazy\" داشته، پس مرورگر دانلود آن را فقط بعد از چیدمان صفحه شروع کرده است."
+
+msgid "If the image is printed by the theme or a page builder, remove loading=\"lazy\" from the <img> of \"%s\" there, or add the snippet below to the child theme's functions.php."
+msgstr "اگر تصویر توسط قالب یا صفحه‌ساز چاپ می‌شود، loading=\"lazy\" را همان‌جا از تگ <img> مربوط به «%s» حذف کنید، یا کد زیر را به functions.php قالب فرزند اضافه کنید."
+
+msgid "Purge the page cache, open this page and check in DevTools (Elements) that the image no longer has loading=\"lazy\"."
+msgstr "کش صفحه را پاک کنید، این صفحه را باز کنید و در DevTools (تب Elements) بررسی کنید که تصویر دیگر loading=\"lazy\" ندارد."
+
+msgid "Best fix: replace the section background with an Image element that shows \"%s\", with width, height and fetchpriority=\"high\"."
+msgstr "بهترین راه: بک‌گراند سکشن را با یک المان تصویر که «%s» را نمایش می‌دهد جایگزین کنید، همراه با width، height و fetchpriority=\"high\"."
+
+msgid "If it has to stay a background, preload it on this page only with the snippet below."
+msgstr "اگر حتماً باید بک‌گراند بماند، با کد زیر فقط در همین صفحه آن را Preload کنید."
+
+msgid "Elementor: under Settings → Features, \"Lazy Load Background Images\" delays backgrounds; exclude this section or turn the feature off."
+msgstr "المنتور: در Settings → Features گزینه‌ی «Lazy Load Background Images» بک‌گراندها را با تأخیر بارگذاری می‌کند؛ این سکشن را مستثنا کنید یا این قابلیت را خاموش کنید."
+
+msgid "The main image \"%s\" is a CSS background and is discovered late"
+msgstr "تصویر اصلی «%s» یک بک‌گراند CSS است و دیر پیدا می‌شود"
+
+msgid "The browser waits %s before it even starts downloading it (load delay)."
+msgstr "مرورگر %s صبر می‌کند تا تازه دانلود آن را شروع کند (تأخیر شروع بارگذاری)."
+
+msgid "Give the main image \"%s\" high fetch priority"
+msgstr "به تصویر اصلی «%s» اولویت بالای دانلود بدهید"
+
+msgid "Download starts %1$s after the HTML arrives; %2$s of visits loaded it without fetchpriority=\"high\"."
+msgstr "دانلود آن %1$s بعد از رسیدن HTML شروع می‌شود؛ در %2$s از بازدیدها بدون fetchpriority=\"high\" بارگذاری شده است."
+
+msgid "Add fetchpriority=\"high\" to the <img> of \"%s\" (only this image on this page)."
+msgstr "به تگ <img> مربوط به «%s» ویژگی fetchpriority=\"high\" اضافه کنید (فقط همین تصویر در این صفحه)."
+
+msgid "If the image is inserted with WordPress functions (featured image, content image), the snippet below does it automatically."
+msgstr "اگر تصویر با توابع وردپرس درج می‌شود (تصویر شاخص یا تصویر محتوا)، کد زیر این کار را خودکار انجام می‌دهد."
+
+msgid "If a slider or animation shows it with JavaScript, make this first slide plain HTML so the browser finds it in the initial HTML."
+msgstr "اگر یک اسلایدر یا انیمیشن آن را با جاوااسکریپت نمایش می‌دهد، اسلاید اول را HTML ساده کنید تا مرورگر آن را در HTML اولیه پیدا کند."
+
+msgid "The image \"%1$s\" is %2$dpx wide but displayed at about %3$dpx"
+msgstr "تصویر «%1$s» عرض %2$dpx دارد اما حدود %3$dpx نمایش داده می‌شود"
+
+msgid "Visitors download about %sx more pixels than the screen shows (rendered width already includes screen density)."
+msgstr "بازدیدکنندگان حدود %s برابر پیکسل بیشتری از آنچه صفحه نمایش می‌دهد دانلود می‌کنند (تراکم پیکسلی صفحه هم در عرض نمایش لحاظ شده است)."
+
+msgid "Upload or crop a version about %dpx wide and use it in this spot."
+msgstr "نسخه‌ای با عرض حدود %dpx بسازید یا برش بزنید و در همین جایگاه از آن استفاده کنید."
+
+msgid "If the image is inserted with WordPress, make sure the <img> has srcset and a correct sizes attribute (e.g. sizes=\"100vw\" for a full-width hero) so phones pick a smaller file."
+msgstr "اگر تصویر با وردپرس درج می‌شود، مطمئن شوید <img> دارای srcset و ویژگی sizes درست است (مثلاً sizes=\"100vw\" برای تصویر تمام‌عرض) تا گوشی‌ها فایل کوچک‌تری انتخاب کنند."
+
+msgid "In a page builder, choose a smaller \"Image size\" (e.g. Large instead of Full) for this widget."
+msgstr "در صفحه‌ساز، برای این ویجت «Image size» کوچک‌تری انتخاب کنید (مثلاً Large به‌جای Full)."
+
+msgid "Convert \"%s\" to WebP or AVIF; for photos this usually cuts the size by 30-50%%."
+msgstr "«%s» را به WebP یا AVIF تبدیل کنید؛ برای عکس‌ها معمولاً حجم را 30 تا 50%% کم می‌کند."
+
+msgid "Compress it (quality 70-80 is visually lossless for photos) with an image optimization plugin or before uploading."
+msgstr "آن را با افزونه‌ی بهینه‌سازی تصویر یا قبل از آپلود فشرده کنید (کیفیت 70 تا 80 برای عکس‌ها از نظر چشمی بدون افت است)."
+
+msgid "For a hero image, aim for under 100-150 KB on mobile."
+msgstr "برای تصویر اصلی بالای صفحه، هدف زیر 100 تا 150 کیلوبایت در موبایل باشد."
+
+msgid "The main image \"%1$s\" weighs %2$s"
+msgstr "حجم تصویر اصلی «%1$s» برابر %2$s است"
+
+msgid "Downloading it takes %s (median)."
+msgstr "دانلود آن %s طول می‌کشد (میانه)."
+
+msgid "The main image comes from another domain (%s)"
+msgstr "تصویر اصلی از دامنه‌ی دیگری بارگذاری می‌شود (%s)"
+
+msgid "The browser must open a new connection (DNS, TCP, TLS) before downloading it."
+msgstr "مرورگر قبل از دانلود باید یک اتصال جدید (DNS، TCP، TLS) برقرار کند."
+
+msgid "Preconnect to %s early with the snippet below, or serve the image from your own domain."
+msgstr "با کد زیر زودتر به %s متصل شوید (Preconnect)، یا تصویر را از دامنه‌ی خودتان سرو کنید."
+
+msgid "The main text \"%s\" appears late (web font or render-blocking files)"
+msgstr "متن اصلی «%s» دیر نمایش داده می‌شود (وب‌فونت یا فایل‌های مسدودکننده‌ی رندر)"
+
+msgid "\"%s\" is downloaded but shown late"
+msgstr "«%s» دانلود شده اما دیر نمایش داده می‌شود"
+
+msgid "After everything it needs is ready, the browser still waits %s before painting it (render delay)."
+msgstr "بعد از آماده شدن همه‌ی پیش‌نیازها، مرورگر هنوز %s صبر می‌کند تا آن را نمایش دهد (تأخیر رندر)."
+
+msgid "Use font-display: swap (or optional) in the @font-face of the font used by this element, so text is shown in a fallback font immediately."
+msgstr "در @font-face فونتی که این المان استفاده می‌کند font-display: swap (یا optional) بگذارید تا متن فوراً با فونت جایگزین نمایش داده شود."
+
+msgid "Preload the font file used by this heading/paragraph (woff2 only)."
+msgstr "فایل فونتی که این تیتر/پاراگراف استفاده می‌کند را Preload کنید (فقط woff2)."
+
+msgid "Fix the render-blocking files listed for this page in this checklist."
+msgstr "فایل‌های مسدودکننده‌ی رندر را که در همین چک‌لیست برای این صفحه آمده‌اند اصلاح کنید."
+
+msgid "Check whether \"%s\" starts hidden (opacity: 0, an entrance animation, a slider that initializes with JavaScript). Remove the entrance animation from this element."
+msgstr "بررسی کنید آیا «%s» در ابتدا مخفی است (opacity: 0، انیمیشن ورود، اسلایدری که با جاوااسکریپت راه‌اندازی می‌شود). انیمیشن ورود را از این المان حذف کنید."
+
+msgid "This file belongs to %s."
+msgstr "این فایل متعلق به %s است."
+
+msgid "If this stylesheet is not needed for the top of this page, load it asynchronously with the snippet below (keep it blocking if the header/hero depends on it, or you will cause layout shifts)."
+msgstr "اگر این استایل برای بالای این صفحه لازم نیست، با کد زیر آن را غیرهمگام بارگذاری کنید (اگر هدر یا بخش اصلی به آن وابسته است، همان‌طور بماند؛ وگرنه جابه‌جایی چیدمان ایجاد می‌شود)."
+
+msgid "If its plugin is not used on this page at all, unload it here with an asset manager (Perfmatters Script Manager, Asset CleanUp)."
+msgstr "اگر افزونه‌ی آن اصلاً در این صفحه استفاده نمی‌شود، با یک مدیر فایل‌ها (Perfmatters Script Manager یا Asset CleanUp) آن را در همین صفحه غیرفعال کنید."
+
+msgid "Or add defer to this one script with the snippet below, then test that its feature still works."
+msgstr "یا با کد زیر فقط به همین اسکریپت defer اضافه کنید و بعد بررسی کنید قابلیت مربوطه هنوز درست کار می‌کند."
+
+msgid "Stylesheet \"%s\" blocks the first paint of this page"
+msgstr "فایل استایل «%s» اولین نمایش این صفحه را مسدود می‌کند"
+
+msgid "Script \"%s\" blocks the first paint of this page"
+msgstr "اسکریپت «%s» اولین نمایش این صفحه را مسدود می‌کند"
+
+msgid "%1$s takes %2$s to load and blocks rendering in %3$s of measured visits."
+msgstr "بارگذاری %1$s %2$s طول می‌کشد و در %3$s از بازدیدهای اندازه‌گیری‌شده رندر را مسدود می‌کند."
+
+msgid "TTFB of this page (P75): %s; good is 800 ms or less."
+msgstr "TTFB این صفحه (P75): %s؛ مقدار خوب 800 میلی‌ثانیه یا کمتر است."
+
+msgid "The rest of the site responds in %s, so this page specifically is slow: it is probably not served from the page cache."
+msgstr "بقیه‌ی سایت در %s پاسخ می‌دهد، پس مشکل مخصوص همین صفحه است: احتمالاً از کش صفحه سرو نمی‌شود."
+
+msgid "Check whether this URL is excluded from the page cache (cache plugin exclusions, WooCommerce cart/checkout/account pages, pages with forms or nonces)."
+msgstr "بررسی کنید این آدرس از کش صفحه مستثنا نشده باشد (استثناهای افزونه‌ی کش، صفحات سبد خرید/تسویه‌حساب/حساب کاربری ووکامرس، صفحات دارای فرم یا nonce)."
+
+msgid "Run the command below twice: if the second response is still slow or has no cache HIT header, the page is not cached."
+msgstr "دستور زیر را دو بار اجرا کنید: اگر پاسخ دوم هم کند بود یا هدر HIT کش نداشت، صفحه کش نمی‌شود."
+
+msgid "Open the page with Query Monitor active (logged in) to find slow database queries or HTTP API calls on this template."
+msgstr "صفحه را با افزونه‌ی Query Monitor فعال (در حالت ورود) باز کنید تا کوئری‌های کند دیتابیس یا درخواست‌های HTTP API این قالب را پیدا کنید."
+
+msgid "The whole site responds slowly; see the \"Reduce server response time\" site-wide suggestion (page cache, object cache, PHP version, CDN)."
+msgstr "کل سایت کند پاسخ می‌دهد؛ پیشنهاد کلی «زمان پاسخ سرور (TTFB) را کاهش دهید» را ببینید (کش صفحه، Object Cache، نسخه‌ی PHP، CDN)."
+
+msgid "Run the command below to measure this page from the server side."
+msgstr "برای اندازه‌گیری این صفحه از سمت سرور، دستور زیر را اجرا کنید."
+
+msgid "Of this, the server takes about %s to generate the page."
+msgstr "از این مقدار، حدود %s صرف تولید صفحه در سرور می‌شود."
+
+msgid "This page responds slowly from the server"
+msgstr "سرور این صفحه را کند پاسخ می‌دهد"
+
+msgid "%1$d slow interactions with this element; P75 response time %2$s (good is 200 ms or less)."
+msgstr "%1$d تعامل کند با این المان؛ زمان پاسخ P75 برابر %2$s (مقدار خوب 200 میلی‌ثانیه یا کمتر است)."
+
+msgid "Waiting before the handler starts: %1$s · handler code: %2$s · drawing the result: %3$s."
+msgstr "انتظار تا شروع اجرای کد: %1$s · اجرای کد: %2$s · نمایش نتیجه: %3$s."
+
+msgid "Longest script during these interactions: %1$s — %2$s %3$s"
+msgstr "طولانی‌ترین اسکریپت در این تعامل‌ها: %1$s — %2$s %3$s"
+
+msgid "%s of these interactions happened while the page was still loading."
+msgstr "%s از این تعامل‌ها وقتی رخ داده که صفحه هنوز در حال بارگذاری بوده است."
+
+msgid "The click is not slow by itself: other scripts keep the main thread busy, so the click waits. Reduce the JavaScript that runs while this page loads."
+msgstr "خود کلیک کند نیست: اسکریپت‌های دیگر Main Thread را مشغول نگه می‌دارند و کلیک منتظر می‌ماند. جاوااسکریپتی را که هنگام بارگذاری این صفحه اجرا می‌شود کم کنید."
+
+msgid "Start with %s: it was running when the click arrived. Unload or delay it on this page if it is not needed immediately."
+msgstr "از %s شروع کنید: هنگام کلیک در حال اجرا بوده است. اگر فوراً لازم نیست، آن را در این صفحه غیرفعال کنید یا با تأخیر اجرا کنید."
+
+msgid "The slow handler is third-party code (%s). Load it later, or replace it with a lighter alternative."
+msgstr "کد کند متعلق به یک سرویس شخص ثالث است (%s). آن را دیرتر بارگذاری کنید یا با گزینه‌ی سبک‌تری جایگزین کنید."
+
+msgid "The slow handler is in %1$s (%2$s). Update it; if it persists, report this slow interaction to its developer with the element name above."
+msgstr "کد کند در %1$s (%2$s) است. آن را به‌روزرسانی کنید؛ اگر مشکل ماند، این تعامل کند را همراه با نام المان بالا به توسعه‌دهنده‌اش گزارش دهید."
+
+msgid "If the handler of \"%1$s\" is your own code: it runs for %2$s. Show the visual change first, then yield to the browser before the heavy work (snippet below)."
+msgstr "اگر کد مربوط به «%1$s» را خودتان نوشته‌اید: اجرای آن %2$s طول می‌کشد. اول تغییر ظاهری را نشان دهید، سپس قبل از کار سنگین کنترل را به مرورگر برگردانید (کد زیر)."
+
+msgid "Do not read layout (offsetHeight, getBoundingClientRect) right after changing styles in this handler."
+msgstr "در این کد بلافاصله بعد از تغییر استایل، اندازه‌های چیدمان (offsetHeight، getBoundingClientRect) را نخوانید."
+
+msgid "After \"%1$s\" is used, the page needs %2$s to draw the result: the update changes too much of the page at once."
+msgstr "بعد از کار با «%1$s»، صفحه %2$s زمان لازم دارد تا نتیجه را نمایش دهد: این تغییر بخش زیادی از صفحه را یک‌جا عوض می‌کند."
+
+msgid "Update only the part of the page that changes instead of re-rendering a large block (menus, filters, mini cart)."
+msgstr "فقط بخشی از صفحه را که تغییر می‌کند به‌روز کنید، نه اینکه یک بلوک بزرگ را از نو بسازید (منوها، فیلترها، مینی‌کارت)."
+
+msgid "Reduce the DOM size of this page: remove hidden duplicate sections and nested wrappers created by the page builder."
+msgstr "اندازه‌ی DOM این صفحه را کم کنید: سکشن‌های تکراری مخفی و المان‌های تودرتوی ساخته‌شده توسط صفحه‌ساز را حذف کنید."
+
+msgid "Add content-visibility: auto to long sections below the fold of this page."
+msgstr "به سکشن‌های طولانی پایین این صفحه content-visibility: auto اضافه کنید."
+
+msgid "Interacting with \"%1$s\" responds in %2$s"
+msgstr "پاسخ به تعامل با «%1$s» %2$s طول می‌کشد"
+
+msgid "This element caused the largest shift in %1$d visits; P75 shift score %2$s (good is 0.1 or less)."
+msgstr "این المان در %1$d بازدید بزرگ‌ترین جابه‌جایی را ایجاد کرده؛ امتیاز جابه‌جایی P75 برابر %2$s (مقدار خوب 0.1 یا کمتر است)."
+
+msgid "It moves while the page is loading (%s of cases)."
+msgstr "هنگام بارگذاری صفحه جابه‌جا می‌شود (%s از موارد)."
+
+msgid "It moves after the page has loaded (%s of cases): something is inserted or resized later."
+msgstr "بعد از بارگذاری صفحه جابه‌جا می‌شود (%s از موارد): چیزی بعداً اضافه می‌شود یا اندازه‌اش تغییر می‌کند."
+
+msgid "Add width and height to the <%1$s> \"%2$s\""
+msgstr "به تگ <%1$s> «%2$s» عرض و ارتفاع بدهید"
+
+msgid "Add width and height attributes to this <%1$s> (\"%2$s\") with its real proportions; CSS can still make it responsive."
+msgstr "ویژگی‌های width و height را با نسبت واقعی به این <%1$s> («%2$s») اضافه کنید؛ CSS همچنان می‌تواند آن را واکنش‌گرا کند."
+
+msgid "If you cannot edit its HTML (widget, embed, ad), reserve its space with the CSS below."
+msgstr "اگر نمی‌توانید HTML آن را ویرایش کنید (ویجت، Embed، تبلیغ)، با CSS زیر فضای آن را رزرو کنید."
+
+msgid "Text in \"%s\" jumps when the web font loads"
+msgstr "متن داخل «%s» با بارگذاری وب‌فونت جابه‌جا می‌شود"
+
+msgid "Use font-display: optional for the font of this text, or make the fallback font the same size with size-adjust so swapping does not move it."
+msgstr "برای فونت این متن از font-display: optional استفاده کنید، یا با size-adjust فونت جایگزین را هم‌اندازه کنید تا تعویض فونت متن را جابه‌جا نکند."
+
+msgid "Preload the woff2 file of this font so it is ready before the first paint."
+msgstr "فایل woff2 این فونت را Preload کنید تا قبل از اولین نمایش آماده باشد."
+
+msgid "Reserve space for \"%s\""
+msgstr "برای «%s» فضا رزرو کنید"
+
+msgid "\"%s\" gets its size only after CSS or JavaScript loads. Give it its final height from the start with the CSS below."
+msgstr "«%s» فقط بعد از بارگذاری CSS یا جاوااسکریپت اندازه‌ی نهایی‌اش را می‌گیرد. با CSS زیر از همان ابتدا ارتفاع نهایی‌اش را تعیین کنید."
+
+msgid "Content is inserted into or above \"%s\" after load (banner, ad, notice, AJAX block). Reserve its final height with the CSS below."
+msgstr "بعد از بارگذاری، محتوایی داخل یا بالای «%s» اضافه می‌شود (بنر، تبلیغ، اعلان، بلوک AJAX). با CSS زیر ارتفاع نهایی آن را رزرو کنید."
+
+msgid "If it is a notice or banner, show it as an overlay (position: fixed) instead of pushing the page down."
+msgstr "اگر اعلان یا بنر است، آن را به‌صورت شناور (position: fixed) نمایش دهید، نه اینکه صفحه را به پایین هل دهد."
+
+msgid "Its final height is about %dpx."
+msgstr "ارتفاع نهایی آن حدود %dpx است."
+
+msgid "WP Rocket: Settings → Media → LazyLoad → add \"%s\" to \"Excluded images or iframes\"."
+msgstr "WP Rocket: مسیر Settings → Media → LazyLoad، «%s» را به «Excluded images or iframes» اضافه کنید."
+
+msgid "WP Rocket: Settings → File Optimization → enable \"Remove Unused CSS\"."
+msgstr "WP Rocket: در Settings → File Optimization گزینه‌ی «Remove Unused CSS» را فعال کنید."
+
+msgid "WP Rocket: Settings → File Optimization → enable \"Load JavaScript deferred\" (make sure \"%s\" is not in its exclusions)."
+msgstr "WP Rocket: در Settings → File Optimization گزینه‌ی «Load JavaScript deferred» را فعال کنید (مطمئن شوید «%s» در لیست استثناهای آن نیست)."
+
+msgid "WP Rocket: Settings → File Optimization → enable \"Delay JavaScript execution\"."
+msgstr "WP Rocket: در Settings → File Optimization گزینه‌ی «Delay JavaScript execution» را فعال کنید."
+
+msgid "LiteSpeed Cache: Page Optimization → Media Settings → add \"%s\" to \"Lazy Load Image Excludes\"."
+msgstr "LiteSpeed Cache: مسیر Page Optimization → Media Settings، «%s» را به «Lazy Load Image Excludes» اضافه کنید."
+
+msgid "LiteSpeed Cache: Page Optimization → CSS Settings → enable \"Generate UCSS\" and \"Load CSS Asynchronously\"."
+msgstr "LiteSpeed Cache: در Page Optimization → CSS Settings گزینه‌های «Generate UCSS» و «Load CSS Asynchronously» را فعال کنید."
+
+msgid "LiteSpeed Cache: Page Optimization → JS Settings → set \"Load JS Deferred\" to \"Deferred\"."
+msgstr "LiteSpeed Cache: در Page Optimization → JS Settings گزینه‌ی «Load JS Deferred» را روی «Deferred» بگذارید."
+
+msgid "LiteSpeed Cache: Page Optimization → JS Settings → set \"Load JS Deferred\" to \"Delayed\"."
+msgstr "LiteSpeed Cache: در Page Optimization → JS Settings گزینه‌ی «Load JS Deferred» را روی «Delayed» بگذارید."
+
+msgid "Perfmatters: Lazy Loading → add \"%s\" to \"Exclude from Lazy Loading\" (or raise \"Exclude Leading Images\")."
+msgstr "Perfmatters: در بخش Lazy Loading، «%s» را به «Exclude from Lazy Loading» اضافه کنید (یا عدد «Exclude Leading Images» را بیشتر کنید)."
+
+msgid "Perfmatters: Assets → CSS → enable \"Remove Unused CSS\"."
+msgstr "Perfmatters: در Assets → CSS گزینه‌ی «Remove Unused CSS» را فعال کنید."
+
+msgid "Perfmatters: Assets → JavaScript → enable \"Defer JavaScript\"."
+msgstr "Perfmatters: در Assets → JavaScript گزینه‌ی «Defer JavaScript» را فعال کنید."
+
+msgid "Perfmatters: Assets → JavaScript → enable \"Delay JavaScript\"."
+msgstr "Perfmatters: در Assets → JavaScript گزینه‌ی «Delay JavaScript» را فعال کنید."
+
+msgid "Smush: Lazy Load → Exclusions → add \"%s\"."
+msgstr "Smush: در Lazy Load → Exclusions، «%s» را اضافه کنید."
+
+msgid "Autoptimize: Images → add \"%s\" to the lazy-load exclusions."
+msgstr "Autoptimize: در بخش Images، «%s» را به استثناهای Lazy Load اضافه کنید."
+
+msgid "Autoptimize: JS, CSS & HTML → enable \"Eliminate render-blocking CSS\"."
+msgstr "Autoptimize: در JS, CSS & HTML گزینه‌ی «Eliminate render-blocking CSS» را فعال کنید."
+
+msgid "Autoptimize: JS, CSS & HTML → enable \"Optimize JavaScript Code\" with \"Do not aggregate but defer\"."
+msgstr "Autoptimize: در JS, CSS & HTML گزینه‌ی «Optimize JavaScript Code» را همراه با «Do not aggregate but defer» فعال کنید."
+
+msgid "a3 Lazy Load: Settings → add the class or file name \"%s\" to the exclusions."
+msgstr "a3 Lazy Load: در تنظیمات، کلاس یا نام فایل «%s» را به استثناها اضافه کنید."
+
+msgid "W3 Total Cache: Performance → User Experience → add \"%s\" to the lazy load \"Exclude words\"."
+msgstr "W3 Total Cache: در Performance → User Experience، «%s» را به «Exclude words» بخش Lazy Load اضافه کنید."
+
+msgid "FlyingPress: Images → raise \"Exclude above fold images\" or exclude \"%s\"."
+msgstr "FlyingPress: در بخش Images عدد «Exclude above fold images» را بیشتر کنید یا «%s» را مستثنا کنید."
+
+msgid "FlyingPress: CSS → enable \"Remove unused CSS\"."
+msgstr "FlyingPress: در بخش CSS گزینه‌ی «Remove unused CSS» را فعال کنید."
+
+msgid "FlyingPress: JavaScript → enable \"Defer JavaScript\"."
+msgstr "FlyingPress: در بخش JavaScript گزینه‌ی «Defer JavaScript» را فعال کنید."
+
+msgid "FlyingPress: JavaScript → enable \"Delay JavaScript\"."
+msgstr "FlyingPress: در بخش JavaScript گزینه‌ی «Delay JavaScript» را فعال کنید."
+
+msgid "Page-specific checklist"
+msgstr "چک‌لیست اختصاصی صفحات"
+
+msgid "Issues detected on each URL from its own visits, each with a fix for exactly that issue. Tick an item once you have fixed it; new visits then show whether the fix worked."
+msgstr "مشکلات هر آدرس از روی بازدیدهای خود همان صفحه شناسایی شده و برای هر مشکل راه‌حل مخصوص همان مشکل آمده است. بعد از رفع هر مورد تیک آن را بزنید؛ بازدیدهای جدید نشان می‌دهند که اصلاح جواب داده یا نه."
+
+msgid "%1$d of %2$d done"
+msgstr "%1$d از %2$d انجام شد"
+
+msgid "Details and fix"
+msgstr "جزئیات و راه‌حل"
+
+msgid "Code"
+msgstr "کد"
+
+msgid "Copy"
+msgstr "کپی"
+
+msgid "Copied"
+msgstr "کپی شد"
+
+msgid "Done, waiting for new visits to verify"
+msgstr "انجام شد؛ در انتظار بازدیدهای جدید برای تأیید"
+
+msgid "Fixed, confirmed by new visits"
+msgstr "رفع شد؛ بازدیدهای جدید تأیید کردند"
+
+msgid "Ticked, but new visits still show this issue"
+msgstr "تیک خورده، اما بازدیدهای جدید هنوز این مشکل را نشان می‌دهند"
+
+msgid "ticked %1$s by %2$s"
+msgstr "تیک‌خورده در %1$s توسط %2$s"
+
+msgid "No specific issues detected on this page in this period."
+msgstr "در این بازه مشکل مشخصی برای این صفحه شناسایی نشد."
+
+msgid "No pages with enough data yet."
+msgstr "هنوز صفحه‌ای با داده‌ی کافی وجود ندارد."
+
+msgid "Unable to load the page checklist."
+msgstr "بارگذاری چک‌لیست صفحات با خطا مواجه شد."
+
+msgid "Could not save. Please try again."
+msgstr "ذخیره نشد. لطفاً دوباره تلاش کنید."
+
+msgid "Show only this page"
+msgstr "فقط همین صفحه"
