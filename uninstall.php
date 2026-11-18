@@ -14,7 +14,7 @@ wp_clear_scheduled_hook( 'wvm_cleanup_event' );
 global $wpdb;
 
 // Remove rate-limit and cached report transients.
-foreach ( array( 'wvm_rl_', 'wvm_dash_', 'wvm_tips_', 'wvm_pages_' ) as $prefix ) {
+foreach ( array( 'wvm_rl_', 'wvm_dash_', 'wvm_tips_', 'wvm_pages_', 'wvm_ai_' ) as $prefix ) {
 	$wpdb->query(
 		$wpdb->prepare(
 			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
@@ -40,6 +40,6 @@ if ( is_array( $settings ) && ! empty( $settings['delete_data_on_uninstall'] ) )
 	delete_option( 'wvm_db_version' );
 }
 
-foreach ( array( 'wvm_settings', 'wvm_cache_version', 'wvm_upgrade_lock', 'wvm_checklist' ) as $option ) {
+foreach ( array( 'wvm_settings', 'wvm_cache_version', 'wvm_upgrade_lock', 'wvm_checklist', 'wvm_ai' ) as $option ) {
 	delete_option( $option );
 }

@@ -562,7 +562,7 @@
 		return el('div', 'wvm-check-status wvm-check-status-' + issue.status, text);
 	}
 
-	function renderIssue(issue, onChange) {
+	function renderIssue(issue, page, onChange) {
 		var item = el('li', 'wvm-check' + (issue.done ? ' is-done' : ''));
 		var head = el('div', 'wvm-check-head');
 		var box = document.createElement('input');
@@ -630,8 +630,94 @@
 			link.rel = 'noopener noreferrer';
 			details.appendChild(link);
 		}
+		if (config.ai && config.ai.enabled) {
+			details.appendChild(aiBlock(issue, page));
+		}
 		item.appendChild(details);
 		return item;
+	}
+
+	// "Ask AI" for one issue. The server rebuilds the issue from its key, so only ids are sent.
+	function aiBlock(issue, page) {
+		var wrap = el('div', 'wvm-ai');
+		var button = el('button', 'button wvm-ai-button', '✨ ' + ts('askAi'));
+		button.type = 'button';
+		var output = el('div', 'wvm-ai-output');
+		wrap.appendChild(button);
+		wrap.appendChild(output);
+
+		function ask(fresh) {
+			button.disabled = true;
+			clear(output).appendChild(el('p', 'wvm-muted wvm-ai-wait', ts('aiThinking')));
+			fetch(config.ai.url, {
+				method: 'POST',
+				credentials: 'same-origin',
+				headers: { 'X-WP-Nonce': config.nonce, 'Content-Type': 'application/json' },
+				body: JSON.stringify({ key: issue.key, path: page.path, days: state.days, device: state.device, fresh: fresh })
+			}).then(function (response) {
+				return response.json().catch(function () {
+					return {};
+				}).then(function (data) {
+					if (!response.ok) {
+						throw new Error((data && data.message) || ts('aiFailed'));
+					}
+					return data;
+				});
+			}).then(function (answer) {
+				button.hidden = true;
+				renderAnswer(answer);
+			}).catch(function (error) {
+				clear(output).appendChild(el('p', 'wvm-error', error.message || ts('aiFailed')));
+			}).then(function () {
+				button.disabled = false;
+			});
+		}
+
+		function renderAnswer(answer) {
+			clear(output);
+			var box = el('div', 'wvm-ai-answer');
+			var head = el('div', 'wvm-ai-head');
+			head.appendChild(el('strong', '', '✨ ' + ts('aiTitle')));
+			head.appendChild(el('span', 'wvm-ai-conf wvm-ai-conf-' + answer.confidence, sprintf(ts('aiConfidence'), ts(answer.confidence))));
+			var meta = el('span', 'wvm-muted', (answer.model || '') + (answer.cached ? ' · ' + sprintf(ts('aiCached'), answer.generatedAt) : ''));
+			meta.dir = 'auto';
+			head.appendChild(meta);
+			var again = el('button', 'button button-small', ts('aiRegenerate'));
+			again.type = 'button';
+			again.addEventListener('click', function () {
+				ask(true);
+			});
+			head.appendChild(again);
+			box.appendChild(head);
+
+			box.appendChild(el('p', 'wvm-ai-summary', answer.summary));
+			if (answer.cause) {
+				box.appendChild(el('h4', '', ts('aiCause')));
+				box.appendChild(el('p', '', answer.cause));
+			}
+			if (answer.steps && answer.steps.length) {
+				box.appendChild(el('h4', '', ts('actions')));
+				box.appendChild(list('ol', answer.steps, 'wvm-actions'));
+			}
+			if (answer.code) {
+				box.appendChild(snippetBlock({ snippet: answer.code, lang: answer.code_lang }));
+			}
+			if (answer.verify) {
+				box.appendChild(el('h4', '', ts('aiVerify')));
+				box.appendChild(el('p', '', answer.verify));
+			}
+			if (answer.caveats) {
+				box.appendChild(el('h4', '', ts('aiCaveats')));
+				box.appendChild(el('p', 'wvm-muted', answer.caveats));
+			}
+			box.appendChild(el('p', 'wvm-ai-warning', ts('aiWarning')));
+			output.appendChild(box);
+		}
+
+		button.addEventListener('click', function () {
+			ask(false);
+		});
+		return wrap;
 	}
 
 	function renderPages(data) {
@@ -685,7 +771,7 @@
 			}
 			var checklist = el('ul', 'wvm-checklist');
 			page.issues.forEach(function (issue) {
-				checklist.appendChild(renderIssue(issue, updateProgress));
+				checklist.appendChild(renderIssue(issue, page, updateProgress));
 			});
 			body.appendChild(checklist);
 			details.appendChild(body);

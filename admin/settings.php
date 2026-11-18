@@ -7,6 +7,11 @@
 
 defined( 'ABSPATH' ) || exit;
 
+$wvm_ai      = Web_Vitals_AI::settings();
+$wvm_ai_test = get_transient( 'wvm_ai_test_' . get_current_user_id() );
+if ( false !== $wvm_ai_test ) {
+	delete_transient( 'wvm_ai_test_' . get_current_user_id() );
+}
 ?>
 
 <div class="wrap wvm-wrap">
@@ -20,6 +25,12 @@ defined( 'ABSPATH' ) || exit;
 		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Collected data deleted.', 'web-vitals-monitor' ); ?></p></div>
 	<?php elseif ( isset( $_GET['wvm_deleted'] ) ) : ?>
 		<div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'Nothing was deleted. Type DELETE to confirm.', 'web-vitals-monitor' ); ?></p></div>
+	<?php endif; ?>
+
+	<?php if ( is_array( $wvm_ai_test ) && $wvm_ai_test['ok'] ) : ?>
+		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'AI connection works.', 'web-vitals-monitor' ); ?></p></div>
+	<?php elseif ( is_array( $wvm_ai_test ) ) : ?>
+		<div class="notice notice-error is-dismissible"><p><?php echo esc_html( __( 'AI connection failed:', 'web-vitals-monitor' ) . ' ' . $wvm_ai_test['message'] ); ?></p></div>
 	<?php endif; ?>
 
 	<form method="post" action="options.php">
@@ -135,6 +146,47 @@ defined( 'ABSPATH' ) || exit;
 				</p>
 				<p class="wvm-field">
 					<label><input type="checkbox" name="wvm_settings[debug_mode]" value="1" <?php checked( $settings['debug_mode'] ); ?>> <?php esc_html_e( 'Debug mode', 'web-vitals-monitor' ); ?></label>
+				</p>
+			</section>
+
+			<section class="wvm-panel" id="wvm-ai">
+				<h2><?php esc_html_e( 'AI Assistant (optional)', 'web-vitals-monitor' ); ?></h2>
+				<p><?php esc_html_e( 'Adds an "Ask AI" button to each checklist issue. The AI receives that issue and returns a fix tailored to it. Nothing is sent until you click the button.', 'web-vitals-monitor' ); ?></p>
+				<p class="wvm-field">
+					<label><input type="checkbox" name="wvm_ai[enabled]" value="1" <?php checked( $wvm_ai['enabled'] ); ?>> <?php esc_html_e( 'Enable AI suggestions', 'web-vitals-monitor' ); ?></label>
+				</p>
+				<p class="wvm-field">
+					<label for="wvm_ai_provider"><?php esc_html_e( 'Provider', 'web-vitals-monitor' ); ?></label>
+					<select id="wvm_ai_provider" name="wvm_ai[provider]">
+						<option value="anthropic" <?php selected( $wvm_ai['provider'], 'anthropic' ); ?>><?php esc_html_e( 'Claude (Anthropic API)', 'web-vitals-monitor' ); ?></option>
+						<option value="openai" <?php selected( $wvm_ai['provider'], 'openai' ); ?>><?php esc_html_e( 'OpenAI-compatible API (any gateway)', 'web-vitals-monitor' ); ?></option>
+					</select>
+				</p>
+				<p class="wvm-field">
+					<label for="wvm_ai_key"><?php esc_html_e( 'API key', 'web-vitals-monitor' ); ?></label>
+					<?php if ( Web_Vitals_AI::key_from_constant() ) : ?>
+						<span class="description"><?php esc_html_e( 'Set by the WVM_AI_API_KEY constant in wp-config.php.', 'web-vitals-monitor' ); ?></span>
+					<?php else : ?>
+						<input id="wvm_ai_key" type="password" autocomplete="off" name="wvm_ai[api_key]" value="" placeholder="<?php echo esc_attr( Web_Vitals_AI::key_hint() ); ?>">
+						<span class="description"><?php esc_html_e( 'Leave empty to keep the saved key. It is stored encrypted and never shown again. You can also define WVM_AI_API_KEY in wp-config.php.', 'web-vitals-monitor' ); ?></span>
+						<?php if ( '' !== Web_Vitals_AI::key_hint() ) : ?>
+							<label class="wvm-inline"><input type="checkbox" name="wvm_ai[clear_key]" value="1"> <?php esc_html_e( 'Remove the saved key', 'web-vitals-monitor' ); ?></label>
+						<?php endif; ?>
+					<?php endif; ?>
+				</p>
+				<p class="wvm-field">
+					<label for="wvm_ai_base_url"><?php esc_html_e( 'API address (base URL)', 'web-vitals-monitor' ); ?></label>
+					<input id="wvm_ai_base_url" type="url" class="regular-text" name="wvm_ai[base_url]" value="<?php echo esc_attr( $wvm_ai['base_url'] ); ?>" placeholder="https://api.anthropic.com">
+					<span class="description"><?php esc_html_e( 'Claude: leave empty for api.anthropic.com. OpenAI-compatible: required, the address up to /v1 (for example https://api.openai.com/v1 or the address of your gateway). HTTPS only.', 'web-vitals-monitor' ); ?></span>
+				</p>
+				<p class="wvm-field">
+					<label for="wvm_ai_model"><?php esc_html_e( 'Model', 'web-vitals-monitor' ); ?></label>
+					<input id="wvm_ai_model" type="text" class="regular-text" name="wvm_ai[model]" value="<?php echo esc_attr( $wvm_ai['model'] ); ?>" placeholder="<?php echo esc_attr( Web_Vitals_AI::DEFAULT_CLAUDE_MODEL ); ?>">
+					<span class="description"><?php esc_html_e( 'Claude default: claude-opus-5-5. For an OpenAI-compatible service, enter the exact model name your provider lists.', 'web-vitals-monitor' ); ?></span>
+				</p>
+				<p class="description"><?php esc_html_e( 'Sent per request: the issue (title, measured evidence, rule-based fix), the page path and its P75 values, WordPress/PHP versions, and the names of the active theme and plugins. No visitor data, user accounts or content.', 'web-vitals-monitor' ); ?></p>
+				<p>
+					<a class="button" href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=wvm_ai_test' ), 'wvm_ai_test' ) ); ?>"><?php esc_html_e( 'Test connection (save first)', 'web-vitals-monitor' ); ?></a>
 				</p>
 			</section>
 		</div>

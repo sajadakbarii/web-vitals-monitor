@@ -154,6 +154,26 @@ final class Web_Vitals_REST_API {
 
 		register_rest_route(
 			self::NAMESPACE,
+			'/ai-advice',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'ai_advice' ),
+				'permission_callback' => array( $this, 'can_manage' ),
+				'args'                => array_merge(
+					$report_args,
+					array(
+						'key' => array(
+							'type'     => 'string',
+							'required' => true,
+							'pattern'  => '^[a-f0-9]{16}$',
+						),
+					)
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
 			'/diagnostics',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
@@ -297,6 +317,51 @@ final class Web_Vitals_REST_API {
 		);
 
 		return new WP_REST_Response( $data );
+	}
+
+	/**
+	 * Ask the AI assistant about one checklist issue. The issue is rebuilt on
+	 * the server from the key; issue content sent by the browser is not trusted.
+	 */
+	public function ai_advice( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$filters = $this->request_filters( $request );
+		if ( '' === $filters['path'] ) {
+			return new WP_Error( 'wvm_ai_path', 'Missing page path.', array( 'status' => 400 ) );
+		}
+
+		$report = $this->cached(
+			'pages',
+			$filters,
+			false,
+			self::SUGGESTIONS_TTL,
+			function () use ( $filters ) {
+				$issues = new Web_Vitals_Page_Issues( $this->database, $this->settings );
+				return $this->settings->with_suggestions_locale(
+					static function () use ( $issues, $filters ) {
+						return $issues->report( $filters );
+					}
+				);
+			}
+		);
+
+		$key = (string) $request->get_param( 'key' );
+		foreach ( (array) ( $report['pages'] ?? array() ) as $page ) {
+			foreach ( (array) $page['issues'] as $issue ) {
+				if ( $issue['key'] !== $key ) {
+					continue;
+				}
+				$ai     = new Web_Vitals_AI();
+				$fresh  = (bool) $request->get_param( 'fresh' );
+				$answer = $this->settings->with_suggestions_locale(
+					function () use ( $ai, $issue, $page, $fresh ) {
+						return $ai->advise( $issue, $page, $this->settings->suggestions_in_persian(), $fresh );
+					}
+				);
+				return is_wp_error( $answer ) ? $answer : new WP_REST_Response( $answer );
+			}
+		}
+
+		return new WP_Error( 'wvm_ai_issue', 'Issue not found for this page and period.', array( 'status' => 404 ) );
 	}
 
 	/**

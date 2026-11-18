@@ -45,6 +45,20 @@ final class Web_Vitals_Settings {
 				'default'           => Web_Vitals_Config::defaults(),
 			)
 		);
+
+		// AI settings hold the API key: a separate option that is never autoloaded on the frontend.
+		if ( false === get_option( Web_Vitals_AI::OPTION, false ) ) {
+			add_option( Web_Vitals_AI::OPTION, Web_Vitals_AI::defaults(), '', false );
+		}
+		register_setting(
+			'wvm_settings_group',
+			Web_Vitals_AI::OPTION,
+			array(
+				'type'              => 'array',
+				'sanitize_callback' => array( 'Web_Vitals_AI', 'sanitize' ),
+				'default'           => Web_Vitals_AI::defaults(),
+			)
+		);
 	}
 
 	/**
