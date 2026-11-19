@@ -14,7 +14,7 @@ if ( false !== $wvm_ai_test ) {
 }
 ?>
 
-<div class="wrap wvm-wrap">
+<div class="wrap wvm-root wvm-settings">
 	<h1><?php esc_html_e( 'Web Vitals Settings', 'web-vitals-monitor' ); ?></h1>
 
 	<?php if ( isset( $_GET['settings-updated'] ) ) : ?>

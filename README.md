@@ -1,5 +1,7 @@
 # Real User Web Vitals Monitor
 
+**English** | [فارسی](README.fa.md)
+
 Lightweight Real User Monitoring (RUM) of Core Web Vitals for WordPress, with page-specific fix checklists and an optional AI assistant.
 
 The plugin measures LCP, INP, CLS, FCP and TTFB in real visitors' browsers, stores the results in custom tables, and shows them in WordPress admin at the 75th percentile, the way Google Search Console evaluates them. It then turns the attribution data of slow visits into concrete fixes: site-wide suggestions, and a checklist per URL whose items name the exact image, element, file or setting to change.
@@ -282,6 +284,8 @@ The plugin is build-free.
 | `admin/` | Dashboard and settings templates |
 | `assets/js/monitor.js` | Frontend collector |
 | `assets/js/admin.js` | Dashboard rendering |
+| `assets/css/` | Design tokens (`tokens.css`), components and admin layout (`admin.css`), font faces (`fonts.css`) |
+| `assets/fonts/` | Self-hosted IBM Plex Sans, IBM Plex Mono and Vazirmatn (SIL Open Font License) |
 | `assets/js/web-vitals.js` | Official `web-vitals@6.0.0` attribution IIFE build |
 
 To update `web-vitals`, replace `assets/js/web-vitals.js` with the attribution IIFE build of the new version from the npm package, update the version passed in `class-collector.php`, and check that the attribution fields read in `monitor.js` still exist.
@@ -292,11 +296,11 @@ Uninstalling always removes the plugin's settings, checklist state, AI settings,
 
 ## Testing status
 
-Verified for 1.3.0:
+Verified for 1.4.0:
 
 - PHP and JavaScript syntax of all files.
 - Fixture-based functional tests of the percentile math, settings patterns, suggestion rules, page-issue detection, snippet whitelisting, tick verification, the collector's attribution and beacon behavior, and the AI assistant's request format, response parsing, error handling, caching, limits and key encryption.
-- The admin dashboard panels (Persian, RTL), checklist ticking and AI answers rendered in a browser with stubbed API responses.
+- The redesigned dashboard rendered in a browser with stubbed API responses: the all-URLs and single-URL views, checklist ticking, an AI answer, the Persian (RTL) panels with the self-hosted fonts, and a 375 px phone width without horizontal scrolling.
 
 Not yet verified:
 
@@ -306,6 +310,13 @@ Not yet verified:
 - WordPress Coding Standards (PHPCS).
 
 ## Changelog
+
+### 1.4.0
+
+- New dashboard design built on a design system: color tokens with contrast-checked light and dark values, rating shapes (circle, square, triangle) in addition to color, threshold meters, distribution bars, P75 trend charts over Good and Poor zones, and logical CSS properties for RTL.
+- New: "Where LCP time goes" and "Where INP time goes" panels for a single URL (median LCP sub-parts and INP phases of its slow visits).
+- Fonts are self-hosted (about 185 KB of WOFF2, loaded only on the plugin's admin screens), so the dashboard never calls a font CDN.
+- Range and device are now segmented buttons and are remembered per browser; long page checklists show the first 6 items with a "Show more" button.
 
 ### 1.3.0
 

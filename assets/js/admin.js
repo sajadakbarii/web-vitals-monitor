@@ -1,3 +1,7 @@
+/**
+ * Dashboard rendering. Markup follows the Web Vitals Monitor design system
+ * (assets/css/admin.css); every value is inserted as text, never as HTML.
+ */
 (function () {
 	'use strict';
 
@@ -5,22 +9,20 @@
 	var i18n = config.i18n || {};
 	var thresholds = config.thresholds || {};
 	var CORE = ['LCP', 'INP', 'CLS'];
-	var NAMES = {
-		LCP: 'Largest Contentful Paint',
-		INP: 'Interaction to Next Paint',
-		CLS: 'Cumulative Layout Shift',
-		FCP: 'First Contentful Paint',
-		TTFB: 'Time to First Byte'
-	};
+	var DIAGNOSTIC = ['FCP', 'TTFB'];
 	var SVG = 'http://www.w3.org/2000/svg';
 	var LIVE_INTERVAL = 60000;
+	var VISIBLE_ISSUES = 6;
 	var state = {
 		days: 7,
 		device: '',
 		path: '',
 		timer: 0,
-		request: 0
+		request: 0,
+		pageviews: 0
 	};
+
+	// ------------------------------------------------------------------ helpers
 
 	function $(selector) {
 		return document.querySelector(selector);
@@ -30,7 +32,7 @@
 		return Object.prototype.hasOwnProperty.call(i18n, key) ? i18n[key] : key;
 	}
 
-	// Strings of the suggestions panel, which can use a different language (Persian) than the rest.
+	// Strings of the suggestions, checklist and AI panels, which can be Persian while the rest is not.
 	function ts(key) {
 		var strings = (config.suggestions && config.suggestions.i18n) || {};
 		return Object.prototype.hasOwnProperty.call(strings, key) ? strings[key] : t(key);
@@ -50,9 +52,20 @@
 		if (className) {
 			node.className = className;
 		}
-		if (content != null) {
-			node.appendChild(typeof content === 'object' ? content : document.createTextNode(String(content)));
+		append(node, content);
+		return node;
+	}
+
+	function append(node, content) {
+		if (content == null) {
+			return node;
 		}
+		(Array.isArray(content) ? content : [content]).forEach(function (child) {
+			if (child == null) {
+				return;
+			}
+			node.appendChild(typeof child === 'object' ? child : document.createTextNode(String(child)));
+		});
 		return node;
 	}
 
@@ -71,17 +84,57 @@
 		return node;
 	}
 
+	function button(className, content, onClick) {
+		var node = el('button', className, content);
+		node.type = 'button';
+		if (onClick) {
+			node.addEventListener('click', onClick);
+		}
+		return node;
+	}
+
+	function ltr(text) {
+		return el('bdi', '', text);
+	}
+
+	function number(value) {
+		return Number(value || 0).toLocaleString();
+	}
+
+	function confident(samples) {
+		return Number(samples) >= Number(config.minimumSamples || 1);
+	}
+
+	// Rating keys from the server ('needs-improvement') to the system's state names ('ni').
+	function stateOf(status) {
+		return { good: 'good', 'needs-improvement': 'ni', poor: 'poor' }[status] || 'unknown';
+	}
+
+	function shape(status) {
+		return el('span', 'wvm-shape wvm-shape--' + stateOf(status));
+	}
+
+	function valueParts(metric, value) {
+		var v = Number(value);
+		if (metric === 'CLS') {
+			return [v.toFixed(3), ''];
+		}
+		return v >= 1000 ? [(v / 1000).toFixed(2), ' s'] : [String(Math.round(v)), ' ms'];
+	}
+
 	function formatMetric(metric, value) {
 		if (value == null || isNaN(Number(value))) {
 			return 'n/a';
 		}
+		var parts = valueParts(metric, value);
+		return parts[0] + parts[1];
+	}
+
+	function formatThreshold(metric, value) {
 		if (metric === 'CLS') {
-			return Number(value).toFixed(3);
+			return Number(value).toFixed(2);
 		}
-		if (Number(value) >= 1000) {
-			return (Number(value) / 1000).toFixed(2) + ' s';
-		}
-		return Math.round(Number(value)) + ' ms';
+		return value >= 1000 ? (value / 1000).toFixed(1) + ' s' : value + ' ms';
 	}
 
 	function rating(metric, value) {
@@ -95,13 +148,12 @@
 		return value <= limits.poor ? 'needs-improvement' : 'poor';
 	}
 
-	function confident(samples) {
-		return Number(samples) >= Number(config.minimumSamples || 1);
+	function rangeName() {
+		return t('span' + state.days);
 	}
 
-	function badge(status) {
-		status = status || 'unknown';
-		return el('span', 'wvm-badge wvm-badge-' + status, t(status));
+	function deviceName() {
+		return state.device ? t('device_' + state.device) : t('allDevices');
 	}
 
 	function query(params) {
@@ -128,6 +180,24 @@
 		});
 	}
 
+	function postJson(url, body) {
+		return fetch(url, {
+			method: 'POST',
+			credentials: 'same-origin',
+			headers: { 'X-WP-Nonce': config.nonce, 'Content-Type': 'application/json' },
+			body: JSON.stringify(body)
+		}).then(function (response) {
+			return response.json().catch(function () {
+				return {};
+			}).then(function (data) {
+				if (!response.ok) {
+					throw new Error((data && data.message) || 'Request failed');
+				}
+				return data;
+			});
+		});
+	}
+
 	function remember() {
 		try {
 			window.localStorage.setItem('wvmDashboard', JSON.stringify({ days: state.days, device: state.device }));
@@ -137,10 +207,10 @@
 	function restore() {
 		try {
 			var saved = JSON.parse(window.localStorage.getItem('wvmDashboard') || '{}');
-			if (saved.days) {
+			if ([1, 7, 28, 90].indexOf(Number(saved.days)) !== -1) {
 				state.days = Number(saved.days);
 			}
-			if (typeof saved.device === 'string') {
+			if (['', 'mobile', 'tablet', 'desktop'].indexOf(saved.device) !== -1) {
 				state.device = saved.device;
 			}
 		} catch (e) {}
@@ -152,293 +222,7 @@
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	}
 
-	function cell(content, className) {
-		var td = el('td', className);
-		if (content != null) {
-			td.appendChild(typeof content === 'object' ? content : document.createTextNode(String(content)));
-		}
-		return td;
-	}
-
-	function valueCell(metric, data) {
-		data = data || {};
-		var status = confident(data.samples) ? data.status : 'unknown';
-		return cell(el('span', 'wvm-value wvm-value-' + (status || 'unknown'), formatMetric(metric, data.p75)));
-	}
-
-	function renderFilter() {
-		var container = $('#wvm-filter');
-		clear(container);
-		container.hidden = !state.path;
-		if (!state.path) {
-			return;
-		}
-		container.appendChild(el('span', '', t('filteredBy') + ' '));
-		container.appendChild(el('code', '', state.path));
-		var button = el('button', 'button button-small', t('clearFilter'));
-		button.type = 'button';
-		button.addEventListener('click', function () {
-			setPath('');
-		});
-		container.appendChild(button);
-	}
-
-	function renderAssessment(rows) {
-		var container = clear($('#wvm-assessment'));
-		var core = rows.filter(function (row) {
-			return CORE.indexOf(row.metric) !== -1;
-		});
-		var ready = core.filter(function (row) {
-			return confident(row.samples);
-		});
-		var status = 'pending';
-		if (ready.length === CORE.length) {
-			status = ready.every(function (row) {
-				return row.status === 'good';
-			}) ? 'passed' : 'failed';
-		}
-		container.className = 'wvm-assessment wvm-assessment-' + status;
-		container.appendChild(el('strong', '', t(status)));
-		container.appendChild(el('span', 'wvm-muted', t('assessmentNote')));
-	}
-
-	function distribution(row) {
-		var bar = el('div', 'wvm-dist');
-		[['good', row.good], ['needs-improvement', row.needs_improvement], ['poor', row.poor]].forEach(function (part) {
-			if (Number(part[1]) <= 0) {
-				return;
-			}
-			var segment = el('span', 'wvm-dist-' + part[0]);
-			segment.style.width = part[1] + '%';
-			segment.title = t(part[0]) + ': ' + part[1] + '%';
-			bar.appendChild(segment);
-		});
-		return bar;
-	}
-
-	function renderOverview(rows, previous) {
-		var container = clear($('#wvm-overview'));
-		var before = {};
-		(previous || []).forEach(function (row) {
-			before[row.metric] = row;
-		});
-
-		rows.forEach(function (row) {
-			var ready = confident(row.samples);
-			var status = ready ? row.status : 'unknown';
-			var card = el('section', 'wvm-card' + (CORE.indexOf(row.metric) === -1 ? ' wvm-card-diagnostic' : ''));
-
-			var head = el('div', 'wvm-card-head');
-			var title = el('h3', '', row.metric);
-			title.title = NAMES[row.metric] || row.metric;
-			head.appendChild(title);
-			head.appendChild(badge(status));
-			card.appendChild(head);
-			card.appendChild(el('div', 'wvm-card-name', NAMES[row.metric] || ''));
-
-			card.appendChild(el('div', 'wvm-card-value wvm-value-' + status, formatMetric(row.metric, row.p75)));
-
-			var prev = before[row.metric];
-			if (prev && prev.p75 && row.p75 != null && confident(prev.samples)) {
-				var change = (row.p75 - prev.p75) / prev.p75 * 100;
-				if (Math.abs(change) >= 1) {
-					card.appendChild(el('div', 'wvm-delta ' + (change > 0 ? 'wvm-delta-worse' : 'wvm-delta-better'),
-						(change > 0 ? '▲ ' : '▼ ') + Math.abs(change).toFixed(0) + '% ' + t('vsPrevious')));
-				}
-			}
-
-			if (row.samples > 0) {
-				card.appendChild(distribution(row));
-			}
-
-			var meta = el('dl', 'wvm-metrics-list');
-			[
-				[t('average'), formatMetric(row.metric, row.average)],
-				[t('median'), formatMetric(row.metric, row.median)],
-				[t('p90'), formatMetric(row.metric, row.p90)],
-				[t('good'), row.good + '%'],
-				[t('poor'), row.poor + '%'],
-				[t('samples'), Number(row.samples).toLocaleString()]
-			].forEach(function (item) {
-				meta.appendChild(el('dt', '', item[0]));
-				meta.appendChild(el('dd', '', item[1]));
-			});
-			card.appendChild(meta);
-
-			if (row.samples > 0 && !ready) {
-				card.appendChild(el('p', 'wvm-note', t('insufficient')));
-			}
-
-			container.appendChild(card);
-		});
-	}
-
-	function renderScore(rows) {
-		var core = rows.filter(function (row) {
-			return CORE.indexOf(row.metric) !== -1 && confident(row.samples);
-		});
-		var node = $('#wvm-score');
-		if (!core.length) {
-			node.textContent = '–';
-			node.className = 'wvm-score';
-			return;
-		}
-		var score = Math.round(core.reduce(function (carry, row) {
-			return carry + Number(row.good) + Number(row.needs_improvement) * 0.5;
-		}, 0) / core.length);
-		node.textContent = score + '/100';
-		node.className = 'wvm-score ' + (score >= 90 ? 'wvm-value-good' : (score >= 50 ? 'wvm-value-needs-improvement' : 'wvm-value-poor'));
-	}
-
-	function renderAlerts(rows) {
-		var container = clear($('#wvm-alerts'));
-		var bad = rows.filter(function (row) {
-			return CORE.indexOf(row.metric) !== -1 && confident(row.samples) && row.status !== 'good';
-		});
-		if (!bad.length) {
-			container.appendChild(el('p', '', t('noAlerts')));
-			return;
-		}
-		bad.forEach(function (row) {
-			var alert = el('div', 'wvm-alert', sprintf(t('alert'), row.metric, formatMetric(row.metric, row.p75)));
-			alert.appendChild(badge(row.status));
-			container.appendChild(alert);
-		});
-	}
-
-	function renderTrend(rows) {
-		var container = clear($('#wvm-trend'));
-		$('#wvm-trend-note').textContent = t('trendNote');
-		if (!rows.length) {
-			container.appendChild(el('p', 'wvm-muted', t('noTrend')));
-			return;
-		}
-
-		var width = 600;
-		var height = 130;
-		var pad = { top: 10, right: 10, bottom: 22, left: 52 };
-
-		CORE.forEach(function (metric) {
-			var points = rows.filter(function (row) {
-				return row[metric] && row[metric].p75 != null;
-			});
-			var block = el('div', 'wvm-trend-block');
-			block.appendChild(el('h3', '', metric));
-			container.appendChild(block);
-			if (!points.length) {
-				block.appendChild(el('p', 'wvm-muted', t('noTrend')));
-				return;
-			}
-
-			var limits = thresholds[metric];
-			var max = Math.max(limits.poor * 1.15, Math.max.apply(null, points.map(function (row) {
-				return row[metric].p75;
-			})) * 1.1);
-			var plotW = width - pad.left - pad.right;
-			var plotH = height - pad.top - pad.bottom;
-			var x = function (index) {
-				return pad.left + (rows.length <= 1 ? plotW / 2 : plotW * index / (rows.length - 1));
-			};
-			var y = function (value) {
-				return pad.top + plotH - (plotH * value / max);
-			};
-
-			var chart = svg('svg', { viewBox: '0 0 ' + width + ' ' + height, role: 'img', 'aria-label': metric + ' P75', preserveAspectRatio: 'none' });
-
-			[['good', limits.good], ['poor', limits.poor]].forEach(function (line) {
-				chart.appendChild(svg('line', { x1: pad.left, x2: width - pad.right, y1: y(line[1]), y2: y(line[1]), 'class': 'wvm-threshold wvm-threshold-' + line[0] }));
-				var label = svg('text', { x: pad.left - 6, y: y(line[1]) + 4, 'text-anchor': 'end', 'class': 'wvm-axis' });
-				label.textContent = formatMetric(metric, line[1]);
-				chart.appendChild(label);
-			});
-
-			var d = '';
-			rows.forEach(function (row, index) {
-				if (!row[metric] || row[metric].p75 == null) {
-					return;
-				}
-				d += (d ? ' L ' : 'M ') + x(index).toFixed(1) + ' ' + y(row[metric].p75).toFixed(1);
-			});
-			chart.appendChild(svg('path', { d: d, 'class': 'wvm-line' }));
-
-			rows.forEach(function (row, index) {
-				if (!row[metric] || row[metric].p75 == null) {
-					return;
-				}
-				var value = row[metric].p75;
-				var dot = svg('circle', { cx: x(index), cy: y(value), r: 3.5, 'class': 'wvm-dot wvm-dot-' + rating(metric, value) });
-				var tip = svg('title');
-				tip.textContent = row.date + ' — ' + formatMetric(metric, value) + ' (' + row[metric].samples + ' ' + t('samples') + ')';
-				dot.appendChild(tip);
-				chart.appendChild(dot);
-			});
-
-			[0, rows.length - 1].filter(function (value, index, list) {
-				return list.indexOf(value) === index;
-			}).forEach(function (index) {
-				var label = svg('text', { x: x(index), y: height - 6, 'text-anchor': index === 0 && rows.length > 1 ? 'start' : 'end', 'class': 'wvm-axis' });
-				label.textContent = rows[index].date;
-				chart.appendChild(label);
-			});
-
-			block.appendChild(chart);
-		});
-	}
-
-	function renderUrlTable(rows) {
-		var layout = $('#wvm-url-layout');
-		var tbody = clear($('#wvm-url-table tbody'));
-		layout.classList.toggle('wvm-url-filtered', !!state.path);
-		rows.forEach(function (row) {
-			var tr = el('tr');
-			var link = el('button', 'button-link wvm-url', row.page_path);
-			link.type = 'button';
-			link.title = t('viewUrl');
-			link.addEventListener('click', function () {
-				setPath(row.page_path);
-			});
-			tr.appendChild(cell(link));
-			CORE.forEach(function (metric) {
-				tr.appendChild(valueCell(metric, row[metric]));
-			});
-			tr.appendChild(cell(Number(row.samples).toLocaleString()));
-			tr.appendChild(cell(Number(row.poor_count).toLocaleString()));
-			tbody.appendChild(tr);
-		});
-	}
-
-	function renderDimensionTable(selector, rows) {
-		var tbody = clear(document.querySelector(selector + ' tbody'));
-		rows.forEach(function (row) {
-			var tr = el('tr');
-			tr.appendChild(cell(row.label));
-			CORE.forEach(function (metric) {
-				tr.appendChild(valueCell(metric, row[metric]));
-			});
-			tr.appendChild(cell(Number(row.samples).toLocaleString()));
-			tbody.appendChild(tr);
-		});
-	}
-
-	function renderHealth(health) {
-		var container = clear($('#wvm-health'));
-		[
-			[t('collector'), t(health.collector || 'waiting')],
-			[t('lastReceived'), health.last_received || 'n/a'],
-			[t('samplesToday'), Number(health.samples_today || 0).toLocaleString()],
-			[t('samplesTotal'), Number(health.samples_total || 0).toLocaleString()],
-			[t('restApi'), health.rest_api],
-			[t('database'), health.database],
-			[t('cron'), health.cron_scheduled ? t('yes') : t('no')],
-			[t('lastAggregated'), health.last_aggregated || 'n/a']
-		].forEach(function (item) {
-			var row = el('div', 'wvm-health-row', item[0]);
-			row.appendChild(el('strong', '', item[1]));
-			container.appendChild(row);
-		});
-	}
-
-	function list(tag, items, className) {
+	function list(tag, className, items) {
 		var node = el(tag, className);
 		items.forEach(function (item) {
 			node.appendChild(el('li', '', item));
@@ -446,160 +230,511 @@
 		return node;
 	}
 
+	function section(label, content) {
+		return el('div', 'wvm-section', [el('p', 'wvm-label', label), content]);
+	}
+
+	function emptyState(title, text) {
+		return el('div', 'wvm-empty', [el('strong', '', title), text ? el('p', '', text) : null]);
+	}
+
+	function errorText(text) {
+		return el('p', 'wvm-muted', [shape('poor'), ' ', text]);
+	}
+
+	// ------------------------------------------------------------------ status components
+
+	function ratingBadge(status, samples) {
+		var key = confident(samples) ? stateOf(status) : 'unknown';
+		var word = { good: 'good', ni: 'needs-improvement', poor: 'poor', unknown: 'unknown' }[key];
+		return el('span', 'wvm-rating is-' + key, [shape(key === 'ni' ? 'needs-improvement' : key), t(word)]);
+	}
+
+	function severityTag(severity) {
+		return el('span', 'wvm-sev is-' + severity, ts(severity));
+	}
+
+	function metricChip(metric) {
+		var code = /^[A-Z]+$/.test(metric || '') ? metric : ({ navigation: 'NAV', device: 'DEVICE', template: 'PAGES', setup: 'SETUP' }[metric] || '');
+		return code ? el('span', 'wvm-chip', code) : null;
+	}
+
+	function delta(row, previous) {
+		if (!previous || !previous.p75 || row.p75 == null || !confident(previous.samples) || !confident(row.samples)) {
+			return null;
+		}
+		var change = (row.p75 - previous.p75) / previous.p75 * 100;
+		var label = sprintf(t('vsPrevious'), rangeName());
+		if (Math.abs(change) < 1) {
+			return el('span', 'wvm-delta', [el('b', '', '0%'), ' ' + label]);
+		}
+		return el('span', 'wvm-delta ' + (change > 0 ? 'is-worse' : 'is-better'), [el('b', '', (change > 0 ? '↑ ' : '↓ ') + Math.abs(change).toFixed(0) + '%'), ' ' + label]);
+	}
+
+	// ------------------------------------------------------------------ data components
+
+	function distribution(row) {
+		var parts = [['good', row.good, 'good'], ['ni', row.needs_improvement, 'needs-improvement'], ['poor', row.poor, 'poor']];
+		var bar = el('div', 'wvm-dist');
+		bar.setAttribute('role', 'img');
+		bar.setAttribute('aria-label', parts.map(function (part) {
+			return t(part[2]) + ' ' + part[1] + '%';
+		}).join(', '));
+		var legend = el('ul', 'wvm-dist-legend');
+		parts.forEach(function (part) {
+			if (Number(part[1]) > 0) {
+				var segment = el('span', 'is-' + part[0]);
+				segment.style.flex = String(part[1]);
+				bar.appendChild(segment);
+			}
+			legend.appendChild(el('li', 'is-' + part[0], [shape(part[2]), t(part[2]) + ' ', el('b', '', part[1] + '%')]));
+		});
+		return el('div', '', [bar, legend]);
+	}
+
+	function meter(metric, value) {
+		var limits = thresholds[metric];
+		if (!limits || value == null) {
+			return null;
+		}
+		var max = limits.poor * 1.5;
+		var good = limits.good / max * 100;
+		var ni = (limits.poor - limits.good) / max * 100;
+		var pos = Math.min(Number(value) / max, 1) * 100;
+		var node = el('div', 'wvm-meter');
+		node.style.setProperty('--good', good.toFixed(1) + '%');
+		node.style.setProperty('--ni', ni.toFixed(1) + '%');
+		node.style.setProperty('--pos', pos.toFixed(1) + '%');
+		node.setAttribute('role', 'img');
+		node.setAttribute('aria-label', sprintf(t('meterLabel'), formatMetric(metric, value), t(rating(metric, value)), formatThreshold(metric, limits.good), formatThreshold(metric, limits.poor)));
+		node.appendChild(el('div', 'wvm-meter-track', [el('span', 'is-good'), el('span', 'is-ni'), el('span', 'is-poor')]));
+		node.appendChild(el('span', 'wvm-meter-needle'));
+		var ticks = el('div', 'wvm-meter-ticks');
+		[[good, limits.good], [good + ni, limits.poor]].forEach(function (tick) {
+			var label = el('span', '', formatThreshold(metric, tick[1]));
+			label.style.insetInlineStart = tick[0].toFixed(1) + '%';
+			ticks.appendChild(label);
+		});
+		node.appendChild(ticks);
+		return node;
+	}
+
+	function metricCard(row, previous) {
+		var diagnostic = DIAGNOSTIC.indexOf(row.metric) !== -1;
+		var card = el('section', 'wvm-metric ' + (diagnostic ? 'is-diagnostic wvm-span6' : 'wvm-span4'));
+		var name = t('name' + row.metric) + (diagnostic ? ' · ' + t('diagnostic') : '');
+		card.appendChild(el('div', 'wvm-metric-head', [
+			el('div', '', [el('p', 'wvm-metric-code', row.metric), el('p', 'wvm-metric-name', name)]),
+			ratingBadge(row.status, row.samples)
+		]));
+
+		var readout = el('p', 'wvm-readout');
+		if (row.p75 != null) {
+			var parts = valueParts(row.metric, row.p75);
+			readout.appendChild(el('bdi', '', [parts[0], parts[1] ? el('small', '', parts[1]) : null]));
+		} else {
+			readout.appendChild(el('bdi', '', '–'));
+		}
+		readout.appendChild(el('span', 'wvm-label', 'P75'));
+		var change = delta(row, previous);
+		if (diagnostic && change) {
+			readout.appendChild(change);
+		}
+		card.appendChild(readout);
+
+		if (!diagnostic) {
+			append(card, meter(row.metric, row.p75));
+			append(card, change);
+			if (row.samples > 0) {
+				card.appendChild(distribution(row));
+			}
+		}
+
+		var stats = el('dl', 'wvm-metric-stats');
+		[[t('median'), formatMetric(row.metric, row.median)], [t('p90'), formatMetric(row.metric, row.p90)], [t('samples'), number(row.samples)]].forEach(function (item) {
+			stats.appendChild(el('div', '', [el('dt', '', item[0]), el('dd', '', item[1])]));
+		});
+		card.appendChild(stats);
+
+		if (row.samples > 0 && !confident(row.samples)) {
+			card.appendChild(el('p', 'wvm-metric-note', t('insufficient')));
+		}
+		return card;
+	}
+
+	function ratingCell(metric, data) {
+		data = data || {};
+		var known = confident(data.samples);
+		var status = known ? data.status : 'unknown';
+		var cell = el('td', 'is-num');
+		cell.appendChild(el('span', 'wvm-cell-rating is-' + stateOf(status) + (known ? '' : ' wvm-muted'), [shape(status), formatMetric(metric, data.p75)]));
+		return cell;
+	}
+
+	// ------------------------------------------------------------------ sections
+
+	function renderFilter() {
+		var container = clear($('#wvm-filter'));
+		container.hidden = !state.path;
+		if (!state.path) {
+			return;
+		}
+		append(container, [
+			el('span', '', t('filteredBy')),
+			el('code', 'wvm-chip', state.path),
+			state.pageviews ? el('span', 'wvm-muted', '· ' + sprintf(t('pageViews'), number(state.pageviews))) : null,
+			button('wvm-btn wvm-btn--sm wvm-btn--ghost', t('clearFilter'), function () {
+				setPath('');
+			})
+		]);
+	}
+
+	function renderAssessment(overview) {
+		var container = clear($('#wvm-assessment'));
+		var core = overview.filter(function (row) {
+			return CORE.indexOf(row.metric) !== -1;
+		});
+		var ready = core.every(function (row) {
+			return confident(row.samples);
+		});
+		var status = 'pending';
+		if (ready) {
+			status = core.every(function (row) {
+				return row.status === 'good';
+			}) ? 'passed' : 'failed';
+		}
+		var shapeKey = { passed: 'good', failed: 'poor', pending: 'unknown' }[status];
+		var title = state.path ? t('page' + status) : t(status);
+		container.className = 'wvm-assess is-' + status;
+		container.appendChild(el('p', 'wvm-assess-status', [shape(shapeKey), title]));
+
+		var metrics = el('ul', 'wvm-assess-metrics');
+		core.forEach(function (row) {
+			if (row.samples > 0) {
+				var key = confident(row.samples) ? row.status : 'unknown';
+				metrics.appendChild(el('li', 'is-' + stateOf(key), [shape(key), row.metric + ' ', el('b', '', formatMetric(row.metric, row.p75))]));
+			}
+		});
+		container.appendChild(metrics);
+		container.appendChild(el('p', 'wvm-assess-note', t('assessmentNote') + ' ' + sprintf(t('assessScope'), deviceName(), rangeName(), number(state.pageviews))));
+	}
+
+	function renderOverview(overview, previous) {
+		var container = clear($('#wvm-overview'));
+		var before = {};
+		(previous || []).forEach(function (row) {
+			before[row.metric] = row;
+		});
+		var total = overview.reduce(function (sum, row) {
+			return sum + Number(row.samples || 0);
+		}, 0);
+		if (!total) {
+			var empty = emptyState(t('emptyTitle'), t('emptyText'));
+			empty.classList.add('wvm-span12');
+			container.appendChild(empty);
+			return;
+		}
+		CORE.concat(DIAGNOSTIC).forEach(function (metric) {
+			var row = overview.filter(function (item) {
+				return item.metric === metric;
+			})[0];
+			if (row) {
+				container.appendChild(metricCard(row, before[metric]));
+			}
+		});
+	}
+
+	function phasePanel(metric, data) {
+		var panel = el('section', 'wvm-panel wvm-span6');
+		panel.appendChild(el('div', 'wvm-panel-head', [
+			el('h2', 'wvm-panel-title', t('where' + metric)),
+			el('p', 'wvm-panel-sub', [t('phasesNote'), data.target ? ' ' : null, data.target ? el('code', 'wvm-chip', data.target) : null])
+		]));
+		var total = data.phases.reduce(function (sum, phase) {
+			return sum + phase.value;
+		}, 0);
+		var wrap = el('div', 'wvm-phases');
+		wrap.setAttribute('role', 'img');
+		wrap.setAttribute('aria-label', metric + ' ' + formatMetric(metric, total) + ': ' + data.phases.map(function (phase) {
+			return t('phase_' + phase.key) + ' ' + formatMetric(metric, phase.value);
+		}).join(', '));
+		var track = el('div', 'wvm-phases-track');
+		var legend = el('ul', 'wvm-phases-legend');
+		data.phases.forEach(function (phase, index) {
+			var step = 'p' + (index + 1);
+			var segment = el('span', step + (phase.flag ? ' is-flag' : ''));
+			segment.style.flexGrow = String(Math.max(phase.value, 1));
+			track.appendChild(segment);
+			legend.appendChild(el('li', phase.flag ? 'is-flag' : '', [el('i', step), t('phase_' + phase.key), el('b', '', formatMetric(metric, phase.value) + ' · ' + Math.round(phase.share * 100) + '%')]));
+		});
+		append(wrap, [track, legend]);
+		panel.appendChild(wrap);
+		return panel;
+	}
+
+	function renderPhases(page) {
+		var container = clear($('#wvm-phases'));
+		var phases = (page && page.phases) || {};
+		var metrics = ['LCP', 'INP'].filter(function (metric) {
+			return phases[metric] && phases[metric].phases && phases[metric].phases.length;
+		});
+		container.hidden = !state.path || !metrics.length;
+		metrics.forEach(function (metric) {
+			container.appendChild(phasePanel(metric, phases[metric]));
+		});
+	}
+
+	function renderTrend(rows) {
+		var container = clear($('#wvm-trend'));
+		if (!rows.length) {
+			container.appendChild(el('p', 'wvm-muted', t('noTrend')));
+			return;
+		}
+		var width = 800;
+		var plot = 80;
+		var x0 = 40;
+		var x1 = 792;
+		var x = function (index) {
+			return rows.length <= 1 ? (x0 + x1) / 2 : x0 + (x1 - x0) * index / (rows.length - 1);
+		};
+
+		CORE.forEach(function (metric) {
+			var limits = thresholds[metric];
+			var points = [];
+			rows.forEach(function (row, index) {
+				if (row[metric] && row[metric].p75 != null && confident(row[metric].samples)) {
+					points.push({ index: index, value: row[metric].p75, samples: row[metric].samples, date: row.date });
+				}
+			});
+			var latest = points.length ? points[points.length - 1].value : null;
+			var key = el('div', 'wvm-trend-key', [el('b', '', metric), el('span', '', formatMetric(metric, latest))]);
+			var chart = svg('svg', { 'class': 'wvm-chart', viewBox: '0 0 ' + width + ' 88', role: 'img' });
+			chart.setAttribute('aria-label', sprintf(t('trendLabel'), metric, points.length));
+
+			var top = Math.max(limits.poor * 1.15, points.reduce(function (max, point) {
+				return Math.max(max, point.value * 1.1);
+			}, 0));
+			var y = function (value) {
+				return (plot - plot * value / top).toFixed(1);
+			};
+			var yGood = Number(y(limits.good));
+			var yPoor = Number(y(limits.poor));
+			chart.appendChild(svg('rect', { 'class': 'zone-good', x: x0, y: yGood, width: x1 - x0, height: (plot - yGood).toFixed(1) }));
+			chart.appendChild(svg('rect', { 'class': 'zone-poor', x: x0, y: 0, width: x1 - x0, height: yPoor }));
+			[yGood, yPoor].forEach(function (lineY, index) {
+				chart.appendChild(svg('line', { 'class': 'grid', x1: x0, x2: x1, y1: lineY, y2: lineY }));
+				var label = svg('text', { 'class': 'axis', x: x0 - 6, y: lineY + 4, 'text-anchor': 'end' });
+				label.textContent = formatThreshold(metric, index ? limits.poor : limits.good);
+				chart.appendChild(label);
+			});
+
+			var d = '';
+			points.forEach(function (point, i) {
+				var gap = i > 0 && point.index !== points[i - 1].index + 1;
+				d += (d === '' || gap ? 'M' : ' L ') + x(point.index).toFixed(0) + ' ' + y(point.value);
+			});
+			if (d) {
+				chart.appendChild(svg('path', { 'class': 'line', d: d }));
+			}
+			points.forEach(function (point, i) {
+				var last = i === points.length - 1;
+				var dot = svg('circle', { 'class': last ? 'dot-end' : 'dot', cx: x(point.index).toFixed(0), cy: y(point.value), r: last ? 4.5 : 3 });
+				var tip = svg('title');
+				tip.textContent = point.date + ': ' + formatMetric(metric, point.value) + ' (' + number(point.samples) + ' ' + t('samples') + ')';
+				dot.appendChild(tip);
+				chart.appendChild(dot);
+			});
+			container.appendChild(el('div', 'wvm-trend-row', [key, chart]));
+		});
+
+		var dates = el('div', 'wvm-row');
+		dates.style.justifyContent = 'space-between';
+		dates.style.paddingInlineStart = '125px';
+		append(dates, [el('span', 'wvm-updated wvm-num', rows[0].date), el('span', 'wvm-updated wvm-num', rows[rows.length - 1].date)]);
+		container.appendChild(dates);
+	}
+
+	function renderHealth(health) {
+		var container = clear($('#wvm-health'));
+		var collector = health.collector || 'waiting';
+		var collectorShape = { active: 'good', stale: 'needs-improvement' }[collector] || 'unknown';
+		[
+			[t('collector'), [shape(collectorShape), t(collector)], collectorShape],
+			[t('lastReceived'), health.last_received || 'n/a'],
+			[t('samplesToday'), number(health.samples_today)],
+			[t('samplesTotal'), number(health.samples_total)],
+			[t('adminVisits'), config.adminsExcluded ? t('excluded') : t('measured')],
+			[t('cron'), health.cron_scheduled ? t('yes') : t('no')],
+			[t('lastAggregated'), health.last_aggregated || 'n/a']
+		].forEach(function (item) {
+			container.appendChild(el('dt', '', item[0]));
+			container.appendChild(el('dd', item[2] ? 'is-' + stateOf(item[2]) : '', item[1]));
+		});
+	}
+
+	function renderUrlTable(rows) {
+		$('#wvm-url-panel').hidden = !!state.path;
+		var tbody = clear($('#wvm-url-table tbody'));
+		if (!rows.length) {
+			var cell = el('td', 'wvm-muted', t('noData'));
+			cell.colSpan = 6;
+			tbody.appendChild(el('tr', '', cell));
+			return;
+		}
+		rows.forEach(function (row) {
+			var link = button('wvm-url', row.page_path, function () {
+				setPath(row.page_path);
+			});
+			link.title = row.page_path;
+			var tr = el('tr', '', el('td', '', link));
+			CORE.forEach(function (metric) {
+				tr.appendChild(ratingCell(metric, row[metric]));
+			});
+			tr.appendChild(el('td', 'is-num', number(row.samples)));
+			tr.appendChild(el('td', 'is-num', number(row.poor_count)));
+			tbody.appendChild(tr);
+		});
+	}
+
+	function renderDimensionTable(selector, rows, translate) {
+		var tbody = clear(document.querySelector(selector + ' tbody'));
+		rows.forEach(function (row) {
+			var tr = el('tr', '', el('td', '', translate ? t('device_' + row.label) : row.label));
+			CORE.forEach(function (metric) {
+				tr.appendChild(ratingCell(metric, row[metric]));
+			});
+			tbody.appendChild(tr);
+		});
+	}
+
+	// ------------------------------------------------------------------ guidance
+
+	function codeBlock(text, lang) {
+		var copy = button('wvm-btn wvm-btn--sm wvm-btn--ghost', ts('copy'));
+		copy.addEventListener('click', function () {
+			if (!navigator.clipboard) {
+				return;
+			}
+			navigator.clipboard.writeText(text).then(function () {
+				copy.textContent = ts('copied');
+				window.setTimeout(function () {
+					copy.textContent = ts('copy');
+				}, 1500);
+			}).catch(function () {});
+		});
+		var pre = el('pre');
+		String(text).split('\n').forEach(function (line, index) {
+			if (index) {
+				pre.appendChild(document.createTextNode('\n'));
+			}
+			pre.appendChild(/^\s*(\/\/|#|\/\*|\*)/.test(line) ? el('span', 'c', line) : document.createTextNode(line));
+		});
+		return el('div', 'wvm-code', [el('div', 'wvm-code-head', [el('span', '', lang || ts('code')), copy]), pre]);
+	}
+
+	function docsLink(href) {
+		var link = el('a', 'wvm-link', ts('learnMore'));
+		link.href = href;
+		link.target = '_blank';
+		link.rel = 'noopener noreferrer';
+		return link;
+	}
+
 	function renderSuggestions(data) {
 		var container = clear($('#wvm-suggestions'));
 		var items = (data && data.suggestions) || [];
 		if (!items.length) {
-			container.appendChild(el('p', 'wvm-empty', ts('noSuggestions')));
+			container.appendChild(emptyState(ts('noSuggestions')));
 			return;
 		}
-
+		var stack = el('div', 'wvm-panel-stack');
 		items.forEach(function (item, index) {
-			var details = el('details', 'wvm-suggestion wvm-suggestion-' + item.severity);
+			var details = el('details', 'wvm-suggestion');
 			details.open = index < 3 && item.severity !== 'info';
+			details.appendChild(el('summary', '', [severityTag(item.severity), metricChip(item.metric), el('span', 'wvm-suggestion-title', item.title), el('span', 'wvm-chevron')]));
 
-			var summary = el('summary');
-			summary.appendChild(el('span', 'wvm-sev wvm-sev-' + item.severity, ts(item.severity)));
-			if (item.metric && /^[A-Z]+$/.test(item.metric)) {
-				summary.appendChild(el('span', 'wvm-chip', item.metric));
-			}
-			summary.appendChild(el('span', 'wvm-suggestion-title', item.title));
-			details.appendChild(summary);
-
-			var body = el('div', 'wvm-suggestion-body');
-			body.appendChild(el('p', '', item.summary));
-
+			var body = el('div', 'wvm-suggestion-body', el('p', '', item.summary));
 			if (item.evidence && item.evidence.length) {
-				body.appendChild(el('h4', '', ts('evidence')));
-				body.appendChild(list('ul', item.evidence, 'wvm-evidence'));
+				body.appendChild(section(ts('evidence'), list('ul', 'wvm-evidence', item.evidence)));
 			}
 			if (item.actions && item.actions.length) {
-				body.appendChild(el('h4', '', ts('actions')));
-				body.appendChild(list('ol', item.actions, 'wvm-actions'));
+				body.appendChild(section(ts('actions'), list('ol', 'wvm-steps', item.actions)));
 			}
-			if (item.urls && item.urls.length && !state.path) {
-				body.appendChild(el('h4', '', ts('affectedUrls')));
-				var urls = el('div', 'wvm-url-chips');
+			if (item.urls && item.urls.length) {
+				var chips = el('div', 'wvm-url-chips');
 				item.urls.forEach(function (path) {
-					var chip = el('button', 'button button-small', path);
-					chip.type = 'button';
-					chip.title = ts('viewUrl');
-					chip.addEventListener('click', function () {
+					var chip = button('wvm-url-chip', path, function () {
 						setPath(path);
 					});
-					urls.appendChild(chip);
+					chip.title = ts('viewUrl');
+					chips.appendChild(chip);
 				});
-				body.appendChild(urls);
+				body.appendChild(section(ts('affectedUrls'), chips));
 			}
 			if (item.docs) {
-				var link = el('a', 'wvm-docs', ts('learnMore') + ' ↗');
-				link.href = item.docs;
-				link.target = '_blank';
-				link.rel = 'noopener noreferrer';
-				body.appendChild(link);
+				body.appendChild(el('div', '', docsLink(item.docs)));
 			}
-
 			details.appendChild(body);
-			container.appendChild(details);
+			stack.appendChild(details);
 		});
+		container.appendChild(stack);
 	}
 
-	function postChecklist(key, done) {
-		return fetch(config.checklistUrl, {
-			method: 'POST',
-			credentials: 'same-origin',
-			headers: { 'X-WP-Nonce': config.nonce, 'Content-Type': 'application/json' },
-			body: JSON.stringify({ key: key, done: done })
-		}).then(function (response) {
-			if (!response.ok) {
-				throw new Error('Request failed');
+	function progressBar() {
+		var fill = el('span', 'wvm-progress-fill');
+		var label = el('span');
+		var node = el('span', 'wvm-progress', [el('span', 'wvm-progress-track', fill), label]);
+		return {
+			node: node,
+			update: function (issues) {
+				var done = issues.filter(function (issue) {
+					return issue.done;
+				}).length;
+				label.textContent = sprintf(ts('progress'), done, issues.length);
+				fill.style.width = (issues.length ? Math.round(done / issues.length * 100) : 100) + '%';
 			}
-		});
-	}
-
-	function metricChips(metrics) {
-		var wrap = el('span', 'wvm-page-metrics');
-		CORE.forEach(function (metric) {
-			var data = (metrics || {})[metric];
-			if (data && data.p75 != null) {
-				wrap.appendChild(el('span', 'wvm-value wvm-value-' + data.status, metric + ' ' + formatMetric(metric, data.p75)));
-			}
-		});
-		return wrap;
-	}
-
-	function snippetBlock(issue) {
-		var wrap = el('div', 'wvm-snippet');
-		var head = el('div', 'wvm-snippet-head', ts('code') + (issue.lang ? ' · ' + issue.lang : ''));
-		var button = el('button', 'button button-small', ts('copy'));
-		button.type = 'button';
-		button.addEventListener('click', function () {
-			if (navigator.clipboard) {
-				navigator.clipboard.writeText(issue.snippet).then(function () {
-					button.textContent = ts('copied');
-					window.setTimeout(function () {
-						button.textContent = ts('copy');
-					}, 1500);
-				});
-			}
-		});
-		head.appendChild(button);
-		wrap.appendChild(head);
-		var pre = el('pre', '', issue.snippet);
-		pre.dir = 'ltr';
-		wrap.appendChild(pre);
-		return wrap;
+		};
 	}
 
 	function issueStatus(issue) {
 		if (!issue.done) {
 			return null;
 		}
+		var shapeKey = { verified: 'good', still: 'poor' }[issue.status] || 'unknown';
 		var text = ts(issue.status);
 		if (issue.doneAt) {
 			text += ' · ' + sprintf(ts('doneBy'), issue.doneAt, issue.doneBy || '–');
 		}
-		return el('div', 'wvm-check-status wvm-check-status-' + issue.status, text);
+		return el('p', 'wvm-issue-status is-' + issue.status, [shape(shapeKey), text]);
 	}
 
-	function renderIssue(issue, page, onChange) {
-		var item = el('li', 'wvm-check' + (issue.done ? ' is-done' : ''));
-		var head = el('div', 'wvm-check-head');
-		var box = document.createElement('input');
+	function renderIssue(issue, page, open, onChange) {
+		var item = el('li', 'wvm-issue' + (issue.done ? ' is-done' : ''));
+		var box = el('input', 'wvm-check');
 		box.type = 'checkbox';
-		box.id = 'wvm-check-' + issue.key;
 		box.checked = !!issue.done;
-		head.appendChild(box);
-
-		var label = el('label', 'wvm-check-label');
-		label.htmlFor = box.id;
-		label.appendChild(el('span', 'wvm-sev wvm-sev-' + issue.severity, ts(issue.severity)));
-		label.appendChild(el('span', 'wvm-chip', issue.metric));
-		label.appendChild(el('span', 'wvm-check-title', issue.title));
-		head.appendChild(label);
-		item.appendChild(head);
-
+		box.setAttribute('aria-label', issue.title);
+		item.appendChild(box);
+		item.appendChild(el('div', 'wvm-issue-meta', [severityTag(issue.severity), metricChip(issue.metric)]));
+		item.appendChild(el('p', 'wvm-issue-title', issue.title));
 		var status = issueStatus(issue);
-		if (status) {
-			item.appendChild(status);
-		}
+		append(item, status);
 
 		box.addEventListener('change', function () {
 			var done = box.checked;
 			box.disabled = true;
-			postChecklist(issue.key, done).then(function () {
+			postJson(config.checklistUrl, { key: issue.key, done: done }).then(function () {
 				issue.done = done;
 				issue.status = done ? 'awaiting' : 'open';
 				issue.doneAt = done ? new Date().toISOString().slice(0, 16).replace('T', ' ') : '';
 				issue.doneBy = config.currentUser || '';
 				item.classList.toggle('is-done', done);
-				var old = item.querySelector('.wvm-check-status');
-				if (old) {
-					old.remove();
+				if (status) {
+					status.remove();
 				}
-				var fresh = issueStatus(issue);
-				if (fresh) {
-					head.insertAdjacentElement('afterend', fresh);
+				status = issueStatus(issue);
+				if (status) {
+					item.insertBefore(status, details);
 				}
 				onChange();
 			}).catch(function () {
@@ -610,198 +745,222 @@
 			});
 		});
 
-		var details = el('details', 'wvm-check-details');
-		details.appendChild(el('summary', '', ts('details')));
+		var details = el('details', 'wvm-disclosure');
+		details.open = !!open;
+		details.appendChild(el('summary', '', [ts('details'), el('span', 'wvm-chevron')]));
+		var body = el('div', 'wvm-disclosure-body');
 		if (issue.evidence && issue.evidence.length) {
-			details.appendChild(el('h4', '', ts('evidence')));
-			details.appendChild(list('ul', issue.evidence, 'wvm-evidence'));
+			body.appendChild(section(ts('evidence'), list('ul', 'wvm-evidence', issue.evidence)));
 		}
 		if (issue.steps && issue.steps.length) {
-			details.appendChild(el('h4', '', ts('actions')));
-			details.appendChild(list('ol', issue.steps, 'wvm-actions'));
+			body.appendChild(section(ts('actions'), list('ol', 'wvm-steps', issue.steps)));
 		}
 		if (issue.snippet) {
-			details.appendChild(snippetBlock(issue));
+			body.appendChild(codeBlock(issue.snippet, issue.lang));
 		}
-		if (issue.docs) {
-			var link = el('a', 'wvm-docs', ts('learnMore') + ' ↗');
-			link.href = issue.docs;
-			link.target = '_blank';
-			link.rel = 'noopener noreferrer';
-			details.appendChild(link);
-		}
+		var actions = el('div', 'wvm-row');
 		if (config.ai && config.ai.enabled) {
-			details.appendChild(aiBlock(issue, page));
+			var ai = aiBlock(issue, page);
+			actions.appendChild(ai.button);
+			if (issue.docs) {
+				var docs = docsLink(issue.docs);
+				docs.style.marginInlineStart = 'auto';
+				actions.appendChild(docs);
+			}
+			body.appendChild(actions);
+			body.appendChild(ai.output);
+		} else if (issue.docs) {
+			actions.appendChild(docsLink(issue.docs));
+			body.appendChild(actions);
 		}
+		details.appendChild(body);
 		item.appendChild(details);
 		return item;
 	}
 
 	// "Ask AI" for one issue. The server rebuilds the issue from its key, so only ids are sent.
 	function aiBlock(issue, page) {
-		var wrap = el('div', 'wvm-ai');
-		var button = el('button', 'button wvm-ai-button', '✨ ' + ts('askAi'));
-		button.type = 'button';
-		var output = el('div', 'wvm-ai-output');
-		wrap.appendChild(button);
-		wrap.appendChild(output);
+		var output = el('div');
+		var ask = button('wvm-btn', [el('span', 'wvm-tag-ai', 'AI'), ts('askAi')], function () {
+			request(false);
+		});
 
-		function ask(fresh) {
-			button.disabled = true;
-			clear(output).appendChild(el('p', 'wvm-muted wvm-ai-wait', ts('aiThinking')));
-			fetch(config.ai.url, {
-				method: 'POST',
-				credentials: 'same-origin',
-				headers: { 'X-WP-Nonce': config.nonce, 'Content-Type': 'application/json' },
-				body: JSON.stringify({ key: issue.key, path: page.path, days: state.days, device: state.device, fresh: fresh })
-			}).then(function (response) {
-				return response.json().catch(function () {
-					return {};
-				}).then(function (data) {
-					if (!response.ok) {
-						throw new Error((data && data.message) || ts('aiFailed'));
-					}
-					return data;
-				});
-			}).then(function (answer) {
-				button.hidden = true;
-				renderAnswer(answer);
+		function request(fresh) {
+			ask.disabled = true;
+			clear(output).appendChild(el('div', 'wvm-ai', el('div', 'wvm-ai-wait', [
+				el('p', 'wvm-muted', ts('aiThinking')),
+				el('span', 'wvm-skeleton'), el('span', 'wvm-skeleton'), el('span', 'wvm-skeleton')
+			])));
+			output.querySelectorAll('.wvm-skeleton').forEach(function (line, index) {
+				line.style.width = ['70%', '90%', '45%'][index];
+			});
+			postJson(config.ai.url, { key: issue.key, path: page.path, days: state.days, device: state.device, fresh: fresh }).then(function (answer) {
+				ask.hidden = true;
+				render(answer);
 			}).catch(function (error) {
-				clear(output).appendChild(el('p', 'wvm-error', error.message || ts('aiFailed')));
+				clear(output).appendChild(errorText(error.message || ts('aiFailed')));
 			}).then(function () {
-				button.disabled = false;
+				ask.disabled = false;
 			});
 		}
 
-		function renderAnswer(answer) {
-			clear(output);
-			var box = el('div', 'wvm-ai-answer');
-			var head = el('div', 'wvm-ai-head');
-			head.appendChild(el('strong', '', '✨ ' + ts('aiTitle')));
-			head.appendChild(el('span', 'wvm-ai-conf wvm-ai-conf-' + answer.confidence, sprintf(ts('aiConfidence'), ts(answer.confidence))));
-			var meta = el('span', 'wvm-muted', (answer.model || '') + (answer.cached ? ' · ' + sprintf(ts('aiCached'), answer.generatedAt) : ''));
-			meta.dir = 'auto';
-			head.appendChild(meta);
-			var again = el('button', 'button button-small', ts('aiRegenerate'));
-			again.type = 'button';
-			again.addEventListener('click', function () {
-				ask(true);
+		function render(answer) {
+			var level = { high: 3, medium: 2, low: 1 }[answer.confidence] || 1;
+			var bars = el('span', 'wvm-conf');
+			for (var i = 1; i <= 3; i++) {
+				bars.appendChild(el('i', i <= level ? 'on' : ''));
+			}
+			bars.appendChild(document.createTextNode(sprintf(ts('aiConfidence'), ts(answer.confidence))));
+			var model = el('span', 'wvm-ai-model', (answer.model || '') + (answer.cached ? ' · ' + answer.generatedAt : ''));
+			var again = button('wvm-btn wvm-btn--sm', ts('aiRegenerate'), function () {
+				request(true);
 			});
-			head.appendChild(again);
-			box.appendChild(head);
-
-			box.appendChild(el('p', 'wvm-ai-summary', answer.summary));
+			var body = el('div', 'wvm-ai-body', el('p', 'wvm-ai-summary', answer.summary));
 			if (answer.cause) {
-				box.appendChild(el('h4', '', ts('aiCause')));
-				box.appendChild(el('p', '', answer.cause));
+				body.appendChild(section(ts('aiCause'), el('p', '', answer.cause)));
 			}
 			if (answer.steps && answer.steps.length) {
-				box.appendChild(el('h4', '', ts('actions')));
-				box.appendChild(list('ol', answer.steps, 'wvm-actions'));
+				body.appendChild(section(ts('actions'), list('ol', 'wvm-steps', answer.steps)));
 			}
-			if (answer.code) {
-				box.appendChild(snippetBlock({ snippet: answer.code, lang: answer.code_lang }));
+			if (answer.code && answer.code_lang !== 'none') {
+				body.appendChild(codeBlock(answer.code, answer.code_lang));
 			}
 			if (answer.verify) {
-				box.appendChild(el('h4', '', ts('aiVerify')));
-				box.appendChild(el('p', '', answer.verify));
+				body.appendChild(section(ts('aiVerify'), el('p', '', answer.verify)));
 			}
 			if (answer.caveats) {
-				box.appendChild(el('h4', '', ts('aiCaveats')));
-				box.appendChild(el('p', 'wvm-muted', answer.caveats));
+				body.appendChild(section(ts('aiCaveats'), el('p', 'wvm-muted', answer.caveats)));
 			}
-			box.appendChild(el('p', 'wvm-ai-warning', ts('aiWarning')));
-			output.appendChild(box);
+			clear(output).appendChild(el('div', 'wvm-ai', [
+				el('div', 'wvm-ai-head', [el('span', 'wvm-tag-ai', 'AI'), el('h4', '', ts('aiTitle')), bars, model, again]),
+				body,
+				el('p', 'wvm-ai-foot', ts('aiWarning'))
+			]));
 		}
 
-		button.addEventListener('click', function () {
-			ask(false);
+		return { button: ask, output: output };
+	}
+
+	function issueList(page, progress, openFirst) {
+		var listNode = el('ul', 'wvm-issues');
+		var hidden = [];
+		var update = function () {
+			progress.update(page.issues);
+		};
+		page.issues.forEach(function (issue, index) {
+			var node = renderIssue(issue, page, openFirst && index === 0 && !issue.done, update);
+			if (!state.path && index >= VISIBLE_ISSUES) {
+				node.hidden = true;
+				hidden.push(node);
+			}
+			listNode.appendChild(node);
 		});
-		return wrap;
+		update();
+		var more = null;
+		if (hidden.length) {
+			more = el('div', '', button('wvm-btn wvm-btn--sm wvm-btn--ghost', sprintf(ts('showMore'), hidden.length), function (event) {
+				hidden.forEach(function (node) {
+					node.hidden = false;
+				});
+				event.currentTarget.parentNode.remove();
+			}));
+		}
+		return [listNode, more];
 	}
 
 	function renderPages(data) {
 		var container = clear($('#wvm-pages'));
 		var pages = (data && data.pages) || [];
+		var headProgress = clear($('#wvm-pages-progress'));
+		$('#wvm-pages-title').textContent = state.path ? ts('pageChecklistTitle') : ts('pagesTitle');
+		$('#wvm-pages-sub').hidden = !!state.path;
+		headProgress.hidden = !state.path;
+		renderPhases(state.path ? pages[0] : null);
+
 		if (!pages.length) {
-			container.appendChild(el('p', 'wvm-muted', ts('noPages')));
+			container.appendChild(emptyState(ts('noPages')));
 			return;
 		}
 
+		if (state.path) {
+			if (!pages[0].issues.length) {
+				container.appendChild(emptyState(ts('noIssues')));
+				return;
+			}
+			var progress = progressBar();
+			headProgress.appendChild(progress.node);
+			append(container, issueList(pages[0], progress, true));
+			return;
+		}
+
+		var stack = el('div', 'wvm-panel-stack');
 		pages.forEach(function (page, index) {
-			var details = el('details', 'wvm-page');
-			details.open = !!state.path || index === 0;
-
-			var summary = el('summary', 'wvm-page-summary');
-			var path = el('code', 'wvm-page-path', page.path);
-			path.dir = 'ltr';
-			summary.appendChild(path);
-			summary.appendChild(metricChips(page.metrics));
-			var progress = el('span', 'wvm-progress');
-			var bar = el('span', 'wvm-progress-bar');
-			var fill = el('span', 'wvm-progress-fill');
-			bar.appendChild(fill);
-			var label = el('span', 'wvm-progress-label');
-			progress.appendChild(bar);
-			progress.appendChild(label);
-			summary.appendChild(progress);
-			details.appendChild(summary);
-
-			function updateProgress() {
-				var total = page.issues.length;
-				var done = page.issues.filter(function (issue) {
-					return issue.done;
-				}).length;
-				label.textContent = sprintf(ts('progress'), done, total);
-				fill.style.width = (total ? Math.round(done / total * 100) : 100) + '%';
-			}
-			updateProgress();
-
-			var body = el('div', 'wvm-page-body');
-			if (!state.path) {
-				var only = el('button', 'button button-small', ts('onlyThisPage'));
-				only.type = 'button';
-				only.addEventListener('click', function () {
-					setPath(page.path);
-				});
-				body.appendChild(only);
-			}
-			if (!page.issues.length) {
-				body.appendChild(el('p', 'wvm-empty', ts('noIssues')));
-			}
-			var checklist = el('ul', 'wvm-checklist');
-			page.issues.forEach(function (issue) {
-				checklist.appendChild(renderIssue(issue, page, updateProgress));
+			var details = el('details', 'wvm-pagecheck');
+			details.open = index === 0;
+			var metrics = el('ul', 'wvm-pagecheck-metrics');
+			CORE.forEach(function (metric) {
+				var value = page.metrics && page.metrics[metric];
+				if (value && value.p75 != null) {
+					var key = confident(value.samples) ? value.status : 'unknown';
+					metrics.appendChild(el('li', 'is-' + stateOf(key) + (confident(value.samples) ? '' : ' wvm-muted'), [shape(key), metric + ' ' + formatMetric(metric, value.p75)]));
+				}
 			});
-			body.appendChild(checklist);
+			var progress = progressBar();
+			details.appendChild(el('summary', '', [el('p', 'wvm-pagecheck-path', page.path), metrics, progress.node, el('span', 'wvm-chevron')]));
+
+			var body = el('div', 'wvm-pagecheck-body', el('div', '', button('wvm-btn wvm-btn--sm', ts('onlyThisPage'), function () {
+				setPath(page.path);
+			})));
+			if (!page.issues.length) {
+				body.appendChild(emptyState(ts('noIssues')));
+				progress.node.hidden = true;
+			} else {
+				append(body, issueList(page, progress, index === 0));
+			}
 			details.appendChild(body);
-			container.appendChild(details);
+			stack.appendChild(details);
+		});
+		container.appendChild(stack);
+	}
+
+	// ------------------------------------------------------------------ loading
+
+	function syncControls() {
+		document.querySelectorAll('#wvm-range button').forEach(function (node) {
+			node.setAttribute('aria-pressed', String(Number(node.getAttribute('data-days')) === state.days));
+		});
+		document.querySelectorAll('#wvm-device button').forEach(function (node) {
+			node.setAttribute('aria-pressed', String(node.getAttribute('data-device') === state.device));
 		});
 	}
 
 	function load(fresh, live) {
 		var request = ++state.request;
-		renderFilter();
+		syncControls();
 		remember();
+		renderFilter();
 
 		fetchJson(config.dashboardUrl, fresh).then(function (data) {
 			if (request !== state.request) {
 				return;
 			}
 			var overview = data.overview || [];
+			var lcp = overview.filter(function (row) {
+				return row.metric === 'LCP';
+			})[0];
+			state.pageviews = lcp ? lcp.samples : 0;
+			renderFilter();
 			renderAssessment(overview);
 			renderOverview(overview, data.previous);
-			renderScore(overview);
-			renderAlerts(overview);
 			renderTrend(data.trend || []);
-			renderUrlTable(data.urls || []);
 			renderHealth(data.health || {});
-			renderDimensionTable('#wvm-device-table', data.devices || []);
-			renderDimensionTable('#wvm-browser-table', data.browsers || []);
-			renderDimensionTable('#wvm-pagetype-table', data.pageTypes || []);
-			$('#wvm-updated').textContent = sprintf(ts('updated'), new Date().toLocaleTimeString());
+			renderUrlTable(data.urls || []);
+			renderDimensionTable('#wvm-device-table', data.devices || [], true);
+			renderDimensionTable('#wvm-browser-table', data.browsers || [], false);
+			renderDimensionTable('#wvm-pagetype-table', data.pageTypes || [], false);
+			$('#wvm-updated').textContent = sprintf(t('updated'), new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
 		}).catch(function () {
-			clear($('#wvm-overview')).appendChild(el('p', 'wvm-error', t('loadFailed')));
+			clear($('#wvm-overview')).appendChild(errorText(t('loadFailed')));
 		});
 
 		// The checklists change slowly; auto-refresh would only collapse what the user opened.
@@ -809,30 +968,24 @@
 			return;
 		}
 
-		document.querySelector('.wvm-suggestions-panel').hidden = !!state.path;
-		var pagesTarget = $('#wvm-pages');
-		if (!pagesTarget.firstChild) {
-			pagesTarget.appendChild(el('p', 'wvm-muted', ts('analyzing')));
-		}
+		$('#wvm-suggestions-panel').hidden = !!state.path;
 		fetchJson(config.pagesUrl, fresh).then(function (data) {
 			if (request === state.request) {
 				renderPages(data);
 			}
 		}).catch(function () {
-			clear(pagesTarget).appendChild(el('p', 'wvm-error', ts('pagesFailed')));
+			clear($('#wvm-pages')).appendChild(errorText(ts('pagesFailed')));
 		});
 
-		var target = $('#wvm-suggestions');
-		if (!target.firstChild) {
-			target.appendChild(el('p', 'wvm-muted', ts('analyzing')));
+		if (!state.path) {
+			fetchJson(config.suggestionsUrl, fresh).then(function (data) {
+				if (request === state.request) {
+					renderSuggestions(data);
+				}
+			}).catch(function () {
+				clear($('#wvm-suggestions')).appendChild(errorText(ts('suggestionsFailed')));
+			});
 		}
-		fetchJson(config.suggestionsUrl, fresh).then(function (data) {
-			if (request === state.request) {
-				renderSuggestions(data);
-			}
-		}).catch(function () {
-			clear(target).appendChild(el('p', 'wvm-error', ts('suggestionsFailed')));
-		});
 	}
 
 	function toggleLive(enabled) {
@@ -848,27 +1001,21 @@
 	}
 
 	document.addEventListener('DOMContentLoaded', function () {
-		var range = $('#wvm-range');
-		var device = $('#wvm-device');
-		if (!range || !device) {
+		if (!$('#wvm-range')) {
 			return;
 		}
-
 		restore();
-		range.value = String(state.days);
-		if (range.value !== String(state.days)) {
-			range.value = '7';
-			state.days = 7;
-		}
-		device.value = state.device;
-
-		range.addEventListener('change', function () {
-			state.days = Number(range.value || 7);
-			load(false);
+		document.querySelectorAll('#wvm-range button').forEach(function (node) {
+			node.addEventListener('click', function () {
+				state.days = Number(node.getAttribute('data-days'));
+				load(false);
+			});
 		});
-		device.addEventListener('change', function () {
-			state.device = device.value;
-			load(false);
+		document.querySelectorAll('#wvm-device button').forEach(function (node) {
+			node.addEventListener('click', function () {
+				state.device = node.getAttribute('data-device');
+				load(false);
+			});
 		});
 		$('#wvm-refresh').addEventListener('click', function () {
 			load(true);
@@ -876,7 +1023,6 @@
 		$('#wvm-live').addEventListener('change', function (event) {
 			toggleLive(event.target.checked);
 		});
-
 		load(false);
 	});
 })();

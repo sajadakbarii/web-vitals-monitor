@@ -180,6 +180,7 @@ final class Web_Vitals_Page_Issues {
 				'path'    => $path,
 				'samples' => count( $samples ),
 				'metrics' => $this->page_metrics( $samples ),
+				'phases'  => $this->page_phases( $samples ),
 				'issues'  => $issues,
 				'done'    => count( array_filter( array_column( $issues, 'done' ) ) ),
 			);
@@ -243,6 +244,80 @@ final class Web_Vitals_Page_Issues {
 			'status'       => $status,
 			'samplesSince' => $metric_after,
 		);
+	}
+
+	/**
+	 * Where the time of slow visits goes: median LCP sub-parts and INP phases
+	 * of the samples at or above the page's P75, each flagged when its share
+	 * exceeds the web.dev guideline (LCP) or dominates the interaction (INP).
+	 *
+	 * @param array<int,array<string,mixed>> $samples Page samples.
+	 * @return array<string,array<string,mixed>>
+	 */
+	private function page_phases( array $samples ): array {
+		$specs  = array(
+			'LCP' => array(
+				'ttfb'         => array( 'timeToFirstByte', 0.4 ),
+				'loadDelay'    => array( 'resourceLoadDelay', 0.1 ),
+				'loadDuration' => array( 'resourceLoadDuration', 0.4 ),
+				'renderDelay'  => array( 'elementRenderDelay', 0.1 ),
+			),
+			'INP' => array(
+				'inputDelay'   => array( 'inputDelay', 0.5 ),
+				'processing'   => array( 'processingDuration', 0.5 ),
+				'presentation' => array( 'presentationDelay', 0.5 ),
+			),
+		);
+		$output = array();
+
+		foreach ( $specs as $metric => $parts ) {
+			$rows = $this->of( $samples, $metric );
+			$p75  = $this->p75( $this->values( $rows ) );
+			if ( null === $p75 ) {
+				continue;
+			}
+
+			$first = reset( $parts )[0];
+			$slow  = array_values(
+				array_filter(
+					$rows,
+					static function ( array $row ) use ( $p75, $first ): bool {
+						return $row['value'] >= $p75 && isset( $row['a'][ $first ] );
+					}
+				)
+			);
+			if ( count( $slow ) < self::MIN_OCCURRENCES ) {
+				continue;
+			}
+
+			$values = array();
+			foreach ( $parts as $key => $part ) {
+				$values[ $key ] = (float) $this->median( $slow, $part[0] );
+			}
+			$total = array_sum( $values );
+			if ( $total <= 0 ) {
+				continue;
+			}
+
+			$list = array();
+			foreach ( $parts as $key => $part ) {
+				$share  = $values[ $key ] / $total;
+				$list[] = array(
+					'key'   => $key,
+					'value' => round( $values[ $key ] ),
+					'share' => round( $share, 3 ),
+					'flag'  => $share > $part[1],
+				);
+			}
+
+			$output[ $metric ] = array(
+				'phases'  => $list,
+				'samples' => count( $slow ),
+				'target'  => 'INP' === $metric ? $this->mode( $slow, 'interactionTarget' ) : $this->mode( $slow, 'target' ),
+			);
+		}
+
+		return $output;
 	}
 
 	/**

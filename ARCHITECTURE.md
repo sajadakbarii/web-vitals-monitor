@@ -1,6 +1,6 @@
 # Architecture
 
-This document describes how Real User Web Vitals Monitor 1.3.0 is built: its components, how requests flow through them, the data model, and the reasons behind the main design decisions. For installation, settings and usage, see [README.md](README.md).
+This document describes how Real User Web Vitals Monitor 1.4.0 is built: its components, how requests flow through them, the data model, and the reasons behind the main design decisions. For installation, settings and usage, see [README.md](README.md).
 
 ## 1. Overview
 
@@ -56,6 +56,7 @@ All PHP classes are `final`, built once in `Web_Vitals_Monitor` (the bootstrap i
 | `Web_Vitals_Admin` | Menu, asset loading, localized strings, export, delete, AI connection test | Database, Settings, AI |
 | `assets/js/monitor.js` | Frontend collector | `web-vitals.js` |
 | `assets/js/admin.js` | Dashboard rendering (DOM APIs only, SVG charts) | REST API |
+| `assets/css/tokens.css`, `admin.css`, `fonts.css` | Design tokens, design-system components plus the plugin layer (dashboard grid, settings page, WordPress admin overrides), self-hosted font faces | `assets/fonts/` |
 | `languages/*-fa_IR.po/.mo` | Persian strings of the suggestions, checklist and AI sections | none |
 
 Extension points: the `wvm_should_collect` filter (skip measurement on a page) and the `wvm_client_ip` filter (client IP for rate limiting).
@@ -256,7 +257,7 @@ Frontend: no library besides `web-vitals`; nothing downloaded by unsampled visit
 
 Collection: one multi-row upsert per beacon; four secondary indexes; rate limiting in the object cache when available.
 
-Admin: assets only on plugin screens (`admin.js` only on the dashboard); histogram percentiles; daily aggregates for trends; report caches with a single version key for invalidation; streamed export in chunks of 5000 rows; checklists and suggestions not reloaded by auto-refresh.
+Admin: assets only on plugin screens (`admin.js` only on the dashboard); self-hosted WOFF2 fonts split by `unicode-range` so Persian glyphs download only when Persian text is shown; histogram percentiles; daily aggregates for trends; report caches with a single version key for invalidation; streamed export in chunks of 5000 rows; checklists and suggestions not reloaded by auto-refresh.
 
 ## 9. Privacy
 

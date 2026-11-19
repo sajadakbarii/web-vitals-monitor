@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Real User Web Vitals Monitor
  * Description: Lightweight real-user Core Web Vitals monitoring for WordPress.
- * Version: 1.3.0
+ * Version: 1.4.0
  * Requires at least: 6.3
  * Requires PHP: 8.1
  * Author: Sajad Akbari
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WVM_VERSION', '1.3.0' );
+define( 'WVM_VERSION', '1.4.0' );
 define( 'WVM_DB_VERSION', '2' );
 define( 'WVM_FILE', __FILE__ );
 define( 'WVM_PATH', plugin_dir_path( __FILE__ ) );

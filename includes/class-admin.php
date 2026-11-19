@@ -72,7 +72,10 @@ final class Web_Vitals_Admin {
 			return;
 		}
 
-		wp_enqueue_style( 'wvm-admin', WVM_URL . 'assets/css/admin.css', array(), WVM_VERSION );
+		// Fonts are self-hosted so the dashboard never depends on a third-party CDN.
+		wp_enqueue_style( 'wvm-fonts', WVM_URL . 'assets/css/fonts.css', array(), WVM_VERSION );
+		wp_enqueue_style( 'wvm-tokens', WVM_URL . 'assets/css/tokens.css', array( 'wvm-fonts' ), WVM_VERSION );
+		wp_enqueue_style( 'wvm-admin', WVM_URL . 'assets/css/admin.css', array( 'wvm-tokens' ), WVM_VERSION );
 
 		if ( false === strpos( $hook, 'wvm-dashboard' ) ) {
 			return;
@@ -94,6 +97,7 @@ final class Web_Vitals_Admin {
 				),
 				'nonce'          => wp_create_nonce( 'wp_rest' ),
 				'minimumSamples' => (int) $this->settings->get( 'minimum_sample_size', 25 ),
+				'adminsExcluded' => (bool) $this->settings->get( 'exclude_admins', 1 ),
 				'thresholds'     => Web_Vitals_Config::thresholds(),
 				'i18n'           => $this->i18n(),
 				'suggestions'    => array(
@@ -111,8 +115,8 @@ final class Web_Vitals_Admin {
 	 */
 	public function suggestions_i18n(): array {
 		return array(
-			'title'             => __( 'Optimization Suggestions', 'web-vitals-monitor' ),
-			'intro'             => __( 'Prioritized recommendations generated from the attribution data of your slowest page views (at or above the 75th percentile).', 'web-vitals-monitor' ),
+			'title'             => __( 'Site-wide suggestions', 'web-vitals-monitor' ),
+			'intro'             => __( 'Based on the slowest visits across the site (75th percentile and above).', 'web-vitals-monitor' ),
 			'critical'          => __( 'Critical', 'web-vitals-monitor' ),
 			'warning'           => __( 'Warning', 'web-vitals-monitor' ),
 			'info'              => __( 'Opportunity', 'web-vitals-monitor' ),
@@ -124,8 +128,6 @@ final class Web_Vitals_Admin {
 			'suggestionsFailed' => __( 'Unable to load suggestions.', 'web-vitals-monitor' ),
 			'analyzing'         => __( 'Analyzing field data…', 'web-vitals-monitor' ),
 			'viewUrl'           => __( 'Analyze this URL', 'web-vitals-monitor' ),
-			/* translators: %s: time. */
-			'updated'           => __( 'Updated %s', 'web-vitals-monitor' ),
 			'pagesTitle'        => __( 'Page-specific checklist', 'web-vitals-monitor' ),
 			'pagesIntro'        => __( 'Issues detected on each URL from its own visits, each with a fix for exactly that issue. Tick an item once you have fixed it; new visits then show whether the fix worked.', 'web-vitals-monitor' ),
 			/* translators: 1: done items, 2: all items. */
@@ -144,6 +146,9 @@ final class Web_Vitals_Admin {
 			'pagesFailed'       => __( 'Unable to load the page checklist.', 'web-vitals-monitor' ),
 			'saveFailed'        => __( 'Could not save. Please try again.', 'web-vitals-monitor' ),
 			'onlyThisPage'      => __( 'Show only this page', 'web-vitals-monitor' ),
+			'pageChecklistTitle' => __( 'Checklist for this page', 'web-vitals-monitor' ),
+			/* translators: %d: number of hidden items. */
+			'showMore'          => __( 'Show %d more', 'web-vitals-monitor' ),
 			'askAi'             => __( 'Ask AI for a fix tailored to this issue', 'web-vitals-monitor' ),
 			'aiThinking'        => __( 'The AI is analyzing this issue (this can take up to a minute)…', 'web-vitals-monitor' ),
 			'aiFailed'          => __( 'The AI request failed.', 'web-vitals-monitor' ),
@@ -170,44 +175,79 @@ final class Web_Vitals_Admin {
 	 */
 	private function i18n(): array {
 		return array(
-			'insufficient'      => __( 'Insufficient data', 'web-vitals-monitor' ),
-			'noData'            => __( 'No real-user data received yet.', 'web-vitals-monitor' ),
-			'loadFailed'        => __( 'Unable to load dashboard data.', 'web-vitals-monitor' ),
-			'average'           => __( 'Average', 'web-vitals-monitor' ),
-			'median'            => __( 'Median', 'web-vitals-monitor' ),
-			'p75'               => __( 'P75', 'web-vitals-monitor' ),
-			'p90'               => __( 'P90', 'web-vitals-monitor' ),
-			'samples'           => __( 'Samples', 'web-vitals-monitor' ),
-			'good'              => __( 'Good', 'web-vitals-monitor' ),
-			'needs-improvement' => __( 'Needs improvement', 'web-vitals-monitor' ),
-			'poor'              => __( 'Poor', 'web-vitals-monitor' ),
-			'unknown'           => __( 'Not enough data', 'web-vitals-monitor' ),
-			'vsPrevious'        => __( 'vs previous period', 'web-vitals-monitor' ),
-			'passed'            => __( 'Core Web Vitals assessment: Passed', 'web-vitals-monitor' ),
-			'failed'            => __( 'Core Web Vitals assessment: Failed', 'web-vitals-monitor' ),
-			'pending'           => __( 'Core Web Vitals assessment: Not enough data', 'web-vitals-monitor' ),
-			'assessmentNote'    => __( 'Passes when LCP, INP and CLS are all Good at the 75th percentile.', 'web-vitals-monitor' ),
-			'noAlerts'          => __( 'No Core Web Vitals alerts for the selected period.', 'web-vitals-monitor' ),
-			/* translators: 1: metric, 2: value. */
-			'alert'             => __( '%1$s P75 is %2$s.', 'web-vitals-monitor' ),
-			'collector'         => __( 'Collector', 'web-vitals-monitor' ),
-			'lastReceived'      => __( 'Last received (UTC)', 'web-vitals-monitor' ),
-			'samplesToday'      => __( 'Samples today', 'web-vitals-monitor' ),
-			'samplesTotal'      => __( 'Samples total (approx.)', 'web-vitals-monitor' ),
-			'restApi'           => __( 'REST API', 'web-vitals-monitor' ),
-			'database'          => __( 'Database', 'web-vitals-monitor' ),
-			'cron'              => __( 'Cron scheduled', 'web-vitals-monitor' ),
-			'lastAggregated'    => __( 'Last aggregated day', 'web-vitals-monitor' ),
-			'yes'               => __( 'yes', 'web-vitals-monitor' ),
-			'no'                => __( 'no', 'web-vitals-monitor' ),
-			'active'            => __( 'active', 'web-vitals-monitor' ),
-			'stale'             => __( 'no data in 24h', 'web-vitals-monitor' ),
-			'waiting'           => __( 'waiting', 'web-vitals-monitor' ),
-			'filteredBy'        => __( 'Showing data for', 'web-vitals-monitor' ),
-			'clearFilter'       => __( 'Show all URLs', 'web-vitals-monitor' ),
-			'viewUrl'           => __( 'Analyze this URL', 'web-vitals-monitor' ),
-			'trendNote'         => __( 'Daily P75. Dashed lines mark the Good and Poor thresholds.', 'web-vitals-monitor' ),
-			'noTrend'           => __( 'No trend data yet.', 'web-vitals-monitor' ),
+			'insufficient'       => __( 'Not enough samples yet for a reliable P75.', 'web-vitals-monitor' ),
+			'noData'             => __( 'No real-user data received yet.', 'web-vitals-monitor' ),
+			'loadFailed'         => __( 'Unable to load dashboard data.', 'web-vitals-monitor' ),
+			'emptyTitle'         => __( 'No field data yet', 'web-vitals-monitor' ),
+			'emptyText'          => __( 'Data appears as soon as real visitors load your pages. Visits by administrators are not measured unless you change that in Settings.', 'web-vitals-monitor' ),
+			'median'             => __( 'Median', 'web-vitals-monitor' ),
+			'p90'                => __( 'P90', 'web-vitals-monitor' ),
+			'samples'            => __( 'Samples', 'web-vitals-monitor' ),
+			'good'               => __( 'Good', 'web-vitals-monitor' ),
+			'needs-improvement'  => __( 'Needs improvement', 'web-vitals-monitor' ),
+			'poor'               => __( 'Poor', 'web-vitals-monitor' ),
+			'unknown'            => __( 'Not enough data', 'web-vitals-monitor' ),
+			'diagnostic'         => __( 'diagnostic', 'web-vitals-monitor' ),
+			'nameLCP'            => __( 'Largest Contentful Paint', 'web-vitals-monitor' ),
+			'nameINP'            => __( 'Interaction to Next Paint', 'web-vitals-monitor' ),
+			'nameCLS'            => __( 'Cumulative Layout Shift', 'web-vitals-monitor' ),
+			'nameFCP'            => __( 'First Contentful Paint', 'web-vitals-monitor' ),
+			'nameTTFB'           => __( 'Time to First Byte', 'web-vitals-monitor' ),
+			/* translators: %s: the selected range, e.g. "7 days". */
+			'vsPrevious'         => __( 'vs previous %s', 'web-vitals-monitor' ),
+			'span1'              => __( '24 hours', 'web-vitals-monitor' ),
+			'span7'              => __( '7 days', 'web-vitals-monitor' ),
+			'span28'             => __( '28 days', 'web-vitals-monitor' ),
+			'span90'             => __( '90 days', 'web-vitals-monitor' ),
+			'allDevices'         => __( 'All devices', 'web-vitals-monitor' ),
+			'device_mobile'      => __( 'Mobile', 'web-vitals-monitor' ),
+			'device_tablet'      => __( 'Tablet', 'web-vitals-monitor' ),
+			'device_desktop'     => __( 'Desktop', 'web-vitals-monitor' ),
+			'device_unknown'     => __( 'Unknown', 'web-vitals-monitor' ),
+			/* translators: 1: value, 2: rating, 3: Good threshold, 4: Poor threshold. */
+			'meterLabel'         => __( 'P75 %1$s, rated %2$s. Good up to %3$s, Poor above %4$s.', 'web-vitals-monitor' ),
+			'passed'             => __( 'Core Web Vitals assessment: Passed', 'web-vitals-monitor' ),
+			'failed'             => __( 'Core Web Vitals assessment: Failed', 'web-vitals-monitor' ),
+			'pending'            => __( 'Core Web Vitals assessment: Not enough data', 'web-vitals-monitor' ),
+			'pagepassed'         => __( 'This page passes Core Web Vitals', 'web-vitals-monitor' ),
+			'pagefailed'         => __( 'This page fails Core Web Vitals', 'web-vitals-monitor' ),
+			'pagepending'        => __( 'Not enough data yet to assess this page', 'web-vitals-monitor' ),
+			'assessmentNote'     => __( 'Passes when LCP, INP and CLS are all Good at the 75th percentile.', 'web-vitals-monitor' ),
+			/* translators: 1: device, 2: range, 3: number of page views. */
+			'assessScope'        => __( '%1$s · last %2$s · %3$s page views.', 'web-vitals-monitor' ),
+			/* translators: %s: number of page views. */
+			'pageViews'          => __( '%s page views', 'web-vitals-monitor' ),
+			'whereLCP'           => __( 'Where LCP time goes', 'web-vitals-monitor' ),
+			'whereINP'           => __( 'Where INP time goes', 'web-vitals-monitor' ),
+			'phasesNote'         => __( 'Median of the slow visits (P75 and above). Highlighted parts take more than their usual share.', 'web-vitals-monitor' ),
+			'phase_ttfb'         => __( 'Time to first byte', 'web-vitals-monitor' ),
+			'phase_loadDelay'    => __( 'Resource load delay', 'web-vitals-monitor' ),
+			'phase_loadDuration' => __( 'Resource load duration', 'web-vitals-monitor' ),
+			'phase_renderDelay'  => __( 'Element render delay', 'web-vitals-monitor' ),
+			'phase_inputDelay'   => __( 'Input delay', 'web-vitals-monitor' ),
+			'phase_processing'   => __( 'Processing duration', 'web-vitals-monitor' ),
+			'phase_presentation' => __( 'Presentation delay', 'web-vitals-monitor' ),
+			'noTrend'            => __( 'No trend data yet.', 'web-vitals-monitor' ),
+			/* translators: 1: metric, 2: number of days. */
+			'trendLabel'         => __( '%1$s daily P75 over %2$d days with enough data', 'web-vitals-monitor' ),
+			'collector'          => __( 'Collector', 'web-vitals-monitor' ),
+			'lastReceived'       => __( 'Last received (UTC)', 'web-vitals-monitor' ),
+			'samplesToday'       => __( 'Samples today', 'web-vitals-monitor' ),
+			'samplesTotal'       => __( 'Samples total (approx.)', 'web-vitals-monitor' ),
+			'adminVisits'        => __( 'Admin visits', 'web-vitals-monitor' ),
+			'excluded'           => __( 'excluded', 'web-vitals-monitor' ),
+			'measured'           => __( 'measured', 'web-vitals-monitor' ),
+			'cron'               => __( 'Cron scheduled', 'web-vitals-monitor' ),
+			'lastAggregated'     => __( 'Last aggregated day', 'web-vitals-monitor' ),
+			'yes'                => __( 'yes', 'web-vitals-monitor' ),
+			'no'                 => __( 'no', 'web-vitals-monitor' ),
+			'active'             => __( 'active', 'web-vitals-monitor' ),
+			'stale'              => __( 'no data in 24h', 'web-vitals-monitor' ),
+			'waiting'            => __( 'waiting', 'web-vitals-monitor' ),
+			'filteredBy'         => __( 'Showing data for', 'web-vitals-monitor' ),
+			'clearFilter'        => __( 'Show all URLs', 'web-vitals-monitor' ),
+			/* translators: %s: time. */
+			'updated'            => __( 'Updated %s', 'web-vitals-monitor' ),
 		);
 	}
 
